@@ -645,7 +645,8 @@ document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (
 
 load(todayIndex(), false);
 if (!store.get('mut-seen-help', 0)) showHelp();
-if (WANT_TRAIN) showPick();
+// Coming from the other game in practice mode: keep the saved selection and go straight in.
+if (WANT_TRAIN) { if (store.get('mut-pick', null) && pool().length) startPractice(); else showPick(); }
 })();
 </script>
 </body>
