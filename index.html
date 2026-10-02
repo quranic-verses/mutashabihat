@@ -4,21 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="لغز يومي في متشابهات القرآن: موضع متكرر وعدد تكراره، واكتب أسماء السور التي ورد فيها.">
-<meta property="og:title" content="متشابهات اليوم">
+<meta property="og:title" content="متشابه اليوم">
 <meta property="og:description" content="لغز يومي في متشابهات القرآن">
 <meta name="theme-color" content="#0E6B57">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E6B57'/%3E%3Cpath d='M32 10l6 16h17l-14 10 5 17-14-10-14 10 5-17-14-10h17z' fill='%23D9AE55'/%3E%3C/svg%3E">
-<title>متشابهات اليوم</title>
+<title>متشابه اليوم</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: one narrow centred column — verse card, answer slots, guess box, guess log */
 :root{
   --bg:#EDF1EE; --surface:#FBFCFB; --ink:#15241F; --muted:#5C6E68; --line:#CCD8D3;
   --accent:#0E6B57; --accent-ink:#FFFFFF; --gold:#A87A1E;
   --ok:#1F8A5B; --ok-bg:#DDF1E6; --bad:#B23A3A; --bad-bg:#F6E0DE; --empty:#E3EAE6;
-  --f-display:"Reem Kufi","IBM Plex Sans Arabic",sans-serif;
+  --f-display:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
   --f-quran:"Amiri Quran","Amiri","Traditional Arabic",serif;
   --f-ui:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
 }
@@ -85,7 +85,7 @@ details p{margin:.4em 0}
 <body>
 <div class="wrap" dir="rtl" lang="ar">
   <header>
-    <h1>متشابهات اليوم</h1>
+    <h1>متشابه اليوم</h1>
     <div class="meta"><span id="pnum"></span> · <span id="pdate"></span> <span id="mode" class="mode"></span></div>
   </header>
 
@@ -100,10 +100,9 @@ details p{margin:.4em 0}
   <div class="slots" id="slots" aria-live="polite"></div>
 
   <form id="guessForm" autocomplete="off">
-    <input type="text" id="guess" list="surahList" placeholder="اكتب اسم السورة أو رقمها" aria-label="اسم السورة">
+    <input type="text" id="guess" placeholder="اكتب اسم السورة أو رقمها" aria-label="اسم السورة">
     <button type="submit" id="go">تخمين</button>
   </form>
-  <datalist id="surahList"></datalist>
 
   <div class="status">
     <span>محاولات خاطئة متبقية</span>
@@ -166,8 +165,6 @@ for (const n in SURAH){
   (ALIASES[n]||[]).forEach(a => LOOKUP[norm(a)] = +n);
 }
 DATA.s.forEach(([n,name]) => LOOKUP[norm(name)] = n);
-document.getElementById('surahList').innerHTML =
-  Object.keys(SURAH).map(n => `<option value="${SURAH[n]}">${toAr(n)}</option>`).join('');
 
 const store = {
   get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
@@ -237,7 +234,7 @@ function guess(raw){
   if (S.done) return;
   const s = LOOKUP[norm(raw)];
   const msg = $('msg');
-  if (!s) { msg.textContent = 'لم أتعرف على اسم السورة. اختر من القائمة أو اكتب رقمها.'; msg.className = 'msg bad'; return; }
+  if (!s) { msg.textContent = 'لم أتعرف على اسم السورة. تأكد من الاسم أو اكتب رقمها.'; msg.className = 'msg bad'; return; }
   if (S.guesses.some(g => g.s === s)) { msg.textContent = 'كتبت سورة ' + SURAH[s] + ' من قبل.'; msg.className = 'msg bad'; return; }
   const ok = !!S.per[s];
   const g = { s, ok }; if (!ok) g.hint = hintFor(s);
@@ -296,7 +293,7 @@ $('practice').addEventListener('click', () => { load(Math.floor(Math.random() * 
 $('backDaily').addEventListener('click', () => { load(todayIndex(), false); window.scrollTo(0, 0); });
 $('share').addEventListener('click', () => {
   const grid = S.guesses.map(g => g.ok ? '🟩' : '🟥').join('');
-  const head = S.practice ? 'متشابهات (تدريب)' : 'متشابهات اليوم ' + toAr(S.idx + 1);
+  const head = S.practice ? 'متشابه اليوم (تدريب)' : 'متشابه اليوم ' + toAr(S.idx + 1);
   const text = `${head}\n﴿${S.text}﴾\n${toAr(S.found.length)}/${toAr(S.surahs.length)} ${grid}`;
   const done = () => { $('msg').textContent = 'تم نسخ النتيجة.'; $('msg').className = 'msg ok'; };
   const fallback = () => { $('msg').textContent = text; $('msg').className = 'msg'; };
