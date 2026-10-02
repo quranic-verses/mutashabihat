@@ -1,7 +1,7 @@
 // متشابه اليوم — offline support.
-// Pages: network first (so updates show up right away), cached copy when offline.
+// Pages: always checked with GitHub first (so updates show up right away), cached copy when offline.
 // Fonts: cached after the first visit. Recitation audio is never cached.
-const CACHE = 'mutashabih-v2';
+const CACHE = 'mutashabih-v3';
 const CORE = ['./', './index.html', './farq.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -20,8 +20,9 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
 
   if (url.origin === self.location.origin) {
+    // cache: 'no-cache' asks GitHub whether the file changed, so players never get an outdated page
     e.respondWith(
-      fetch(req).then(res => {
+      fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return res;
       }).catch(() => caches.match(req, { ignoreSearch: true })

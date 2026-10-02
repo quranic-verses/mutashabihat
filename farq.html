@@ -203,7 +203,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <button type="button" class="mbtn" id="modeTrain"><span class="mt">تدرّب</span><span class="ms">على ما حفظته</span></button>
   </nav>
   <nav class="games" aria-label="اللعبة">
-    <a class="gbtn" id="gameSurah" href="index.html">في أي سورة؟</a>
+    <a class="gbtn" id="gameSurah" href="./">في أي سورة؟</a>
     <a class="gbtn" id="gameFarq" href="farq.html">فرّق بينهما</a>
   </nav>
 
@@ -590,7 +590,7 @@ function setNav(practice){
   $('modeTrain').classList.toggle('on', practice); $('modeTrain').setAttribute('aria-pressed', practice);
   const base = location.hostname.endsWith('github.io') ? '' : SITE_URL;
   const tag = practice ? '#train' : '';
-  $('gameSurah').href = (base || '') + (base ? '' : 'index.html') + tag;
+  $('gameSurah').href = (base || './') + tag;   // same address as the home page, so no stale copy
   $('gameFarq').href = base + 'farq.html' + tag;
   $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq');
 }
