@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="لغز يومي في متشابهات القرآن: موضع متكرر وعدد تكراره، واكتب أسماء السور التي ورد فيها.">
+<meta property="og:title" content="متشابهات اليوم">
+<meta property="og:description" content="لغز يومي في متشابهات القرآن">
+<meta name="theme-color" content="#0E6B57">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E6B57'/%3E%3Cpath d='M32 10l6 16h17l-14 10 5 17-14-10-14 10 5-17-14-10h17z' fill='%23D9AE55'/%3E%3C/svg%3E">
+<title>متشابهات اليوم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow centred column — verse card, answer slots, guess box, guess log */
+:root{
+  --bg:#EDF1EE; --surface:#FBFCFB; --ink:#15241F; --muted:#5C6E68; --line:#CCD8D3;
+  --accent:#0E6B57; --accent-ink:#FFFFFF; --gold:#A87A1E;
+  --ok:#1F8A5B; --ok-bg:#DDF1E6; --bad:#B23A3A; --bad-bg:#F6E0DE; --empty:#E3EAE6;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",sans-serif;
+  --f-quran:"Amiri Quran","Amiri","Traditional Arabic",serif;
+  --f-ui:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1614; --surface:#15201D; --ink:#E5EEEA; --muted:#93A6A0; --line:#2A3934;
+  --accent:#3DB592; --accent-ink:#06120F; --gold:#D9AE55;
+  --ok:#4CC58C; --ok-bg:#163428; --bad:#E57373; --bad-bg:#3A1F1F; --empty:#1C2925; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1614; --surface:#15201D; --ink:#E5EEEA; --muted:#93A6A0; --line:#2A3934;
+  --accent:#3DB592; --accent-ink:#06120F; --gold:#D9AE55;
+  --ok:#4CC58C; --ok-bg:#163428; --bad:#E57373; --bad-bg:#3A1F1F; --empty:#1C2925; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.6}
+.wrap{max-width:620px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.9rem;margin:0;color:var(--accent);text-wrap:balance}
+.meta{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 18px;text-align:center;display:flex;flex-direction:column;gap:12px}
+.phrase{font-family:var(--f-quran);font-size:clamp(1.6rem,6vw,2.2rem);line-height:2.1;margin:0;word-spacing:.08em}
+.phrase::before{content:"﴿ ";color:var(--gold)} .phrase::after{content:" ﴾";color:var(--gold)}
+.facts{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.92rem;color:var(--muted)}
+.chip b{color:var(--ink);font-variant-numeric:tabular-nums}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.slot{min-height:52px;border-radius:10px;background:var(--empty);border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;padding:6px}
+.slot.found{background:var(--ok-bg);border:1px solid var(--ok);color:var(--ok);animation:pop .35s ease}
+.slot.missed{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+.slot small{font-weight:500;opacity:.85;font-variant-numeric:tabular-nums}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.slot.found{animation:none}}
+form{display:flex;gap:8px}
+input[type=text]{flex:1;min-width:0;font:inherit;font-size:1.05rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+input[type=text]:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:10px 16px;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+.status{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:.95rem;color:var(--muted)}
+.lives{display:flex;gap:5px;direction:ltr}
+.lives i{width:12px;height:12px;border-radius:50%;background:var(--accent);display:block}
+.lives i.used{background:var(--bad)}
+.msg{min-height:1.6em;font-weight:600;text-align:center}
+.msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.log li{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:10px;font-weight:500}
+.log li.ok{background:var(--ok-bg);color:var(--ok)} .log li.bad{background:var(--bad-bg);color:var(--bad)}
+.log li span:last-child{font-weight:400;font-size:.9rem}
+.reveal{display:flex;flex-direction:column;gap:10px}
+.reveal h2{font-family:var(--f-display);font-size:1.25rem;margin:0}
+.ayah{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.ayah .ref{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ayah p{font-family:var(--f-quran);font-size:1.3rem;line-height:2.2;margin:4px 0 0}
+.ayah mark{background:transparent;color:var(--accent);font-weight:700;border-bottom:2px solid var(--gold)}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.stats div{border:1px solid var(--line);border-radius:10px;padding:8px 4px;background:var(--surface)}
+.stats b{display:block;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.stats span{font-size:.8rem;color:var(--muted)}
+details{color:var(--muted);font-size:.92rem}
+details p{margin:.4em 0}
+.next{text-align:center;color:var(--muted);margin:0;font-variant-numeric:tabular-nums}
+.mode{font-size:.85rem;color:var(--gold);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="ar">
+  <header>
+    <h1>متشابهات اليوم</h1>
+    <div class="meta"><span id="pnum"></span> · <span id="pdate"></span> <span id="mode" class="mode"></span></div>
+  </header>
+
+  <section class="card" aria-label="الموضع">
+    <p class="phrase" id="phrase"></p>
+    <div class="facts">
+      <span class="chip">تكرر <b id="count"></b> مرات</span>
+      <span class="chip">في <b id="scount"></b> سور</span>
+    </div>
+  </section>
+
+  <div class="slots" id="slots" aria-live="polite"></div>
+
+  <form id="guessForm" autocomplete="off">
+    <input type="text" id="guess" list="surahList" placeholder="اكتب اسم السورة أو رقمها" aria-label="اسم السورة">
+    <button type="submit" id="go">تخمين</button>
+  </form>
+  <datalist id="surahList"></datalist>
+
+  <div class="status">
+    <span>محاولات خاطئة متبقية</span>
+    <div class="lives" id="lives"></div>
+  </div>
+  <div class="msg" id="msg" role="status"></div>
+
+  <ul class="log" id="log"></ul>
+
+  <section class="reveal" id="reveal" hidden>
+    <h2 id="resultTitle"></h2>
+    <div class="row">
+      <button type="button" id="share">نسخ النتيجة</button>
+      <button type="button" class="ghost" id="practice">لغز عشوائي للتدريب</button>
+      <button type="button" class="ghost" id="backDaily" hidden>العودة للغز اليوم</button>
+    </div>
+    <p class="next" id="next"></p>
+    <div class="stats" id="stats"></div>
+    <div id="ayat" class="reveal"></div>
+  </section>
+
+  <details>
+    <summary>طريقة اللعب</summary>
+    <p>كل يوم يظهر موضع متشابه من القرآن، مع عدد مرات تكراره وعدد السور التي ورد فيها.</p>
+    <p>اكتب أسماء السور التي ورد فيها الموضع. إذا كانت السورة تحتوي الموضع أكثر من مرة تمتلئ كل خاناتها معًا.</p>
+    <p>عند الخطأ يظهر لك هل أقرب سورة صحيحة لم تكتشفها تأتي قبل السورة التي كتبتها أو بعدها في ترتيب المصحف. لديك ٤ أخطاء فقط.</p>
+    <p>النص من مصحف المدينة (رواية حفص)، والمواضع مستخرجة آليًا من العبارات المتكررة حرفيًا.</p>
+  </details>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+const MAX_WRONG = 4;
+const START = new Date(2026, 9, 2); // puzzle #1
+const FIX = {14:'إبراهيم',34:'سبأ',78:'النبأ',76:'الإنسان',82:'الانفطار',84:'الانشقاق'};
+const SURAH = {}; DATA.s.forEach(([n,name,tr]) => SURAH[n] = FIX[n] || name);
+const ALIASES = {9:['براءة'],17:['بني إسرائيل'],40:['المؤمن'],41:['حم السجدة'],47:['القتال'],76:['الدهر'],111:['اللهب','تبت'],94:['الانشراح'],112:['التوحيد']};
+const AR_DIG = '٠١٢٣٤٥٦٧٨٩';
+const toAr = n => String(n).replace(/\d/g, d => AR_DIG[d]);
+
+function norm(s){
+  s = (s||'').trim().replace(/[ً-ٰٟۖ-ۭـ]/g,'')
+    .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/^سوره\s+/,'').replace(/\s+/g,'');
+  s = s.replace(/[٠-٩]/g, d => AR_DIG.indexOf(d));
+  return s.replace(/^ال/,'');
+}
+const LOOKUP = {};
+for (const n in SURAH){
+  LOOKUP[norm(SURAH[n])] = +n; LOOKUP[n] = +n;
+  (ALIASES[n]||[]).forEach(a => LOOKUP[norm(a)] = +n);
+}
+DATA.s.forEach(([n,name]) => LOOKUP[norm(name)] = n);
+document.getElementById('surahList').innerHTML =
+  Object.keys(SURAH).map(n => `<option value="${SURAH[n]}">${toAr(n)}</option>`).join('');
+
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+function todayIndex(){
+  const now = new Date(); const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.round((t - START) / 86400000));
+}
+
+let S; // current game state
+const $ = id => document.getElementById(id);
+
+function load(idx, practice){
+  const p = DATA.p[idx % DATA.p.length];
+  const [id, text, spans] = p;
+  const per = {}; spans.forEach(([s]) => per[s] = (per[s]||0) + 1);
+  const key = 'mut-day-' + idx;
+  const saved = !practice && store.get(key, null);
+  S = { idx, practice, key, id, text, spans, per, surahs: Object.keys(per).map(Number).sort((a,b)=>a-b),
+        found: saved ? saved.found : [], guesses: saved ? saved.guesses : [], done: saved ? saved.done : false };
+  $('pnum').textContent = practice ? 'تدريب' : 'اللغز ' + toAr(idx + 1);
+  $('pdate').textContent = new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long'});
+  $('mode').textContent = '';
+  $('backDaily').hidden = !practice;
+  $('phrase').textContent = text;
+  $('count').textContent = toAr(spans.length);
+  $('scount').textContent = toAr(S.surahs.length);
+  $('msg').textContent = ''; $('msg').className = 'msg';
+  $('guess').value = '';
+  render();
+}
+
+function wrongCount(){ return S.guesses.filter(g => !g.ok).length; }
+
+function render(){
+  // slots: one tile per occurrence, grouped by surah in mushaf order
+  const slots = [];
+  S.surahs.forEach(s => {
+    const f = S.found.includes(s);
+    for (let i = 0; i < S.per[s]; i++) {
+      if (f) slots.push(`<div class="slot found">${SURAH[s]}${S.per[s] > 1 ? ` <small>×${toAr(S.per[s])}</small>` : ''}</div>`);
+      else if (S.done) slots.push(`<div class="slot missed">${SURAH[s]}${S.per[s] > 1 ? ` <small>×${toAr(S.per[s])}</small>` : ''}</div>`);
+      else slots.push(`<div class="slot" aria-label="خانة فارغة"></div>`);
+      if (f || S.done) break;
+    }
+  });
+  $('slots').innerHTML = slots.join('');
+  const w = wrongCount();
+  $('lives').innerHTML = Array.from({length: MAX_WRONG}, (_, i) => `<i class="${i < w ? 'used' : ''}"></i>`).join('');
+  $('log').innerHTML = S.guesses.slice().reverse().map(g =>
+    `<li class="${g.ok ? 'ok' : 'bad'}"><span>${SURAH[g.s]}</span><span>${g.ok ? (S.per[g.s] > 1 ? 'صحيح ×' + toAr(S.per[g.s]) : 'صحيح') : g.hint}</span></li>`).join('');
+  $('guess').disabled = $('go').disabled = S.done;
+  $('reveal').hidden = !S.done;
+  if (S.done) renderReveal();
+}
+
+function hintFor(s){
+  const left = S.surahs.filter(x => !S.found.includes(x));
+  let best = left[0];
+  left.forEach(x => { if (Math.abs(x - s) < Math.abs(best - s)) best = x; });
+  return best > s ? 'الأقرب بعدها' : 'الأقرب قبلها';
+}
+
+function guess(raw){
+  if (S.done) return;
+  const s = LOOKUP[norm(raw)];
+  const msg = $('msg');
+  if (!s) { msg.textContent = 'لم أتعرف على اسم السورة. اختر من القائمة أو اكتب رقمها.'; msg.className = 'msg bad'; return; }
+  if (S.guesses.some(g => g.s === s)) { msg.textContent = 'كتبت سورة ' + SURAH[s] + ' من قبل.'; msg.className = 'msg bad'; return; }
+  const ok = !!S.per[s];
+  const g = { s, ok }; if (!ok) g.hint = hintFor(s);
+  S.guesses.push(g);
+  if (ok) { S.found.push(s); msg.textContent = 'صحيح: ' + SURAH[s]; msg.className = 'msg ok'; }
+  else { msg.textContent = 'ليست في ' + SURAH[s] + ' · ' + g.hint; msg.className = 'msg bad'; }
+  const won = S.found.length === S.surahs.length, lost = wrongCount() >= MAX_WRONG;
+  if (won || lost) {
+    S.done = true; S.won = won;
+    msg.textContent = won ? 'أحسنت! وجدت كل المواضع.' : 'انتهت المحاولات.';
+    msg.className = 'msg ' + (won ? 'ok' : 'bad');
+    if (!S.practice) recordStats(won);
+  }
+  if (!S.practice) store.set(S.key, { found: S.found, guesses: S.guesses, done: S.done });
+  $('guess').value = '';
+  render();
+}
+
+function recordStats(won){
+  const st = store.get('mut-stats', { played:0, wins:0, streak:0, best:0, last:-1 });
+  st.played++; if (won) st.wins++;
+  st.streak = won ? (st.last === S.idx - 1 ? st.streak + 1 : 1) : 0;
+  st.best = Math.max(st.best, st.streak); st.last = won ? S.idx : st.last;
+  store.set('mut-stats', st);
+}
+
+function esc(t){ return t.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function renderReveal(){
+  const won = S.found.length === S.surahs.length;
+  $('resultTitle').textContent = won ? 'المواضع كلها' : 'المواضع الصحيحة';
+  const st = store.get('mut-stats', { played:0, wins:0, streak:0, best:0 });
+  $('stats').innerHTML = [['لعبت', st.played], ['فوز %', st.played ? Math.round(100 * st.wins / st.played) : 0], ['التتابع', st.streak], ['أفضل تتابع', st.best]]
+    .map(([l, v]) => `<div><b>${toAr(v)}</b><span>${l}</span></div>`).join('');
+  $('stats').hidden = S.practice;
+  tick();
+  $('ayat').innerHTML = S.spans.map(([s, a, b, e]) => {
+    const words = (DATA.v[s + ':' + a] || '').split(/[\s ]+/).filter(Boolean);
+    const html = words.map((w, i) => (i === b ? '<mark>' : '') + esc(w) + (i === e - 1 ? '</mark>' : '')).join(' ');
+    return `<div class="ayah"><div class="ref">سورة ${SURAH[s]} · الآية ${toAr(a)}</div><p>${html}</p></div>`;
+  }).join('');
+}
+
+function tick(){
+  const el = $('next'); if (!el || !S || !S.done) return;
+  const now = new Date(), mid = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  let s = Math.max(0, Math.floor((mid - now) / 1000));
+  const p = n => String(n).padStart(2, '0');
+  el.textContent = 'اللغز التالي بعد ' + toAr(p(Math.floor(s / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60));
+  if (s === 0 && !S.practice) load(todayIndex(), false);
+}
+setInterval(tick, 1000);
+
+$('guessForm').addEventListener('submit', e => { e.preventDefault(); guess($('guess').value); });
+$('practice').addEventListener('click', () => { load(Math.floor(Math.random() * DATA.p.length), true); window.scrollTo(0, 0); });
+$('backDaily').addEventListener('click', () => { load(todayIndex(), false); window.scrollTo(0, 0); });
+$('share').addEventListener('click', () => {
+  const grid = S.guesses.map(g => g.ok ? '🟩' : '🟥').join('');
+  const head = S.practice ? 'متشابهات (تدريب)' : 'متشابهات اليوم ' + toAr(S.idx + 1);
+  const text = `${head}\n﴿${S.text}﴾\n${toAr(S.found.length)}/${toAr(S.surahs.length)} ${grid}`;
+  const done = () => { $('msg').textContent = 'تم نسخ النتيجة.'; $('msg').className = 'msg ok'; };
+  const fallback = () => { $('msg').textContent = text; $('msg').className = 'msg'; };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+});
+
+load(todayIndex(), false);
+})();
+</script>
+</body>
+</html>
