@@ -105,6 +105,26 @@ details p{margin:.4em 0}
 .ex-facts{margin:0;color:var(--muted);font-size:.9rem}
 .ex-slots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .start{align-self:stretch}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.tab{background:transparent;color:var(--accent);padding:8px 6px}
+.tab.on{background:var(--accent);color:var(--accent-ink)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;max-height:min(40vh,320px);overflow-y:auto;padding:2px}
+.chips.juz{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));max-height:none}
+.opt{position:relative;display:block;cursor:pointer}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:flex;align-items:center;justify-content:center;gap:4px;min-height:38px;padding:4px 6px;border:1px solid var(--line);border-radius:9px;font-size:.92rem;text-align:center}
+.opt span small{color:var(--muted);font-size:.75rem;font-variant-numeric:tabular-nums}
+.opt input:checked+span{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);font-weight:600}
+.opt input:checked+span small{color:var(--ok)}
+.opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+.pick-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.92rem;color:var(--muted)}
+.link{background:none;border:none;color:var(--accent);padding:4px;font-weight:600}
+.start:disabled{opacity:.45}
+.pbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;border:1px dashed var(--gold);border-radius:12px;padding:8px 12px}
+.plabel{color:var(--muted);font-size:.92rem;min-width:0}
+.plabel b{color:var(--gold)}
+.pbtns{display:flex;flex-wrap:wrap;gap:6px}
+button.sm{padding:6px 10px;font-size:.88rem}
 .mode{font-size:.85rem;color:var(--gold);font-weight:600}
 </style>
 </head>
@@ -115,6 +135,15 @@ details p{margin:.4em 0}
     <div class="head-side"><div class="meta"><span id="pnum"></span> · <span id="pdate"></span> <span id="mode" class="mode"></span></div>
     <button type="button" class="help-btn ghost" id="helpBtn" aria-label="طريقة اللعب">؟</button></div>
   </header>
+
+  <div class="pbar" id="pbar" hidden>
+    <span class="plabel">تدريب: <b id="pwhat"></b></span>
+    <div class="pbtns">
+      <button type="button" class="ghost sm" id="again">لغز آخر</button>
+      <button type="button" class="ghost sm" id="change">تغيير الاختيار</button>
+      <button type="button" class="ghost sm" id="backDaily">لغز اليوم</button>
+    </div>
+  </div>
 
   <section class="card" aria-label="الموضع">
     <p class="phrase" id="phrase"></p>
@@ -142,7 +171,6 @@ details p{margin:.4em 0}
     <div class="row">
       <button type="button" id="share">نسخ النتيجة</button>
       <button type="button" class="ghost" id="practice">لغز عشوائي للتدريب</button>
-      <button type="button" class="ghost" id="backDaily" hidden>العودة للغز اليوم</button>
     </div>
     <p class="next" id="next"></p>
     <div class="stats" id="stats"></div>
@@ -157,6 +185,22 @@ details p{margin:.4em 0}
 
 </div>
 
+<div class="overlay" id="pick" role="dialog" aria-modal="true" aria-labelledby="pickTitle" hidden>
+  <div class="panel" dir="rtl" lang="ar">
+    <button type="button" class="x" id="pickX" aria-label="إغلاق">×</button>
+    <h2 id="pickTitle">لغز للتدريب</h2>
+    <p class="small">اختر الأجزاء التي تحفظها، وستأتيك ألغاز كل مواضعها داخل هذه الأجزاء فقط.</p>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" class="tab" data-mode="all">كل القرآن</button>
+      <button type="button" role="tab" class="tab" data-mode="juz">الأجزاء التي حفظتها</button>
+    </div>
+    <div id="pickJuz" hidden>
+      <div class="chips juz" id="juzChips"></div>
+    </div>
+    <div class="pick-foot"><span id="pickCount"></span><button type="button" class="link" id="pickClear">مسح الاختيار</button></div>
+    <button type="button" id="pickGo" class="start">ابدأ</button>
+  </div>
+</div>
 <div class="overlay" id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
   <div class="panel" dir="rtl" lang="ar">
     <button type="button" class="x" id="helpX" aria-label="إغلاق">×</button>
@@ -252,7 +296,8 @@ function load(idx, practice){
   $('pnum').textContent = practice ? 'تدريب' : 'اللغز ' + toAr(idx + 1);
   $('pdate').textContent = new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', timeZone:'Africa/Cairo'});
   $('mode').textContent = '';
-  $('backDaily').hidden = !practice;
+  $('pbar').hidden = !practice;
+  $('practice').hidden = practice;
   $('phrase').textContent = text;
   $('count').textContent = toAr(spans.length);
   $('scount').textContent = toAr(S.surahs.length);
@@ -402,7 +447,70 @@ setInterval(tick, 1000);
 
 $('ayat').addEventListener('click', e => { const b = e.target.closest('.play'); if (b) togglePlay(b.dataset.key); });
 $('guessForm').addEventListener('submit', e => { e.preventDefault(); guess($('guess').value); });
-$('practice').addEventListener('click', () => { load(Math.floor(Math.random() * DATA.p.length), true); window.scrollTo(0, 0); });
+// ---------- Practice puzzles filtered by surah or juz ----------
+// "Memorized juz" mode: every place in the puzzle must lie inside the chosen juz,
+// so the selection never gives an answer away.
+const PICK_DEFAULT = { mode: 'all', juz: [] };
+let pick = Object.assign({}, PICK_DEFAULT, store.get('mut-pick', {}));
+if (pick.mode !== 'juz') pick.mode = 'all';
+if (!Array.isArray(pick.juz)) pick.juz = [];
+const juzOf = (s, a) => (DATA.m && DATA.m[s + ':' + a] || [0])[0];
+
+$('juzChips').innerHTML = Array.from({length: 30}, (_, i) =>
+  `<label class="opt"><input type="checkbox" value="${i + 1}"><span>${toAr(i + 1)}</span></label>`).join('');
+
+function pool(){
+  const J1 = new Set(pick.juz), out = [];
+  DATA.p.forEach((p, i) => {
+    if (pick.mode === 'all' || p[2].every(sp => J1.has(juzOf(sp[0], sp[1])))) out.push(i);
+  });
+  return out;
+}
+function pickLabel(){
+  if (pick.mode === 'juz') {
+    // show runs as ranges: 1, 2, 3, 7 -> ١–٣، ٧
+    const j = pick.juz.slice().sort((a, b) => a - b), parts = [];
+    for (let i = 0; i < j.length; i++) {
+      let k = i; while (k + 1 < j.length && j[k + 1] === j[k] + 1) k++;
+      parts.push(k > i ? toAr(j[i]) + '–' + toAr(j[k]) : toAr(j[i])); i = k;
+    }
+    return (j.length > 1 ? 'الأجزاء ' : 'الجزء ') + parts.join('، ');
+  }
+  return 'كل القرآن';
+}
+const puzzles = n => n === 1 ? 'لغز واحد متاح' : n === 2 ? 'لغزان متاحان'
+  : (n % 100 >= 3 && n % 100 <= 10) ? toAr(n) + ' ألغاز متاحة' : toAr(n) + ' لغزًا متاحًا';
+function renderPick(){
+  document.querySelectorAll('.tab').forEach(t => { const on = t.dataset.mode === pick.mode; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
+  $('pickJuz').hidden = pick.mode !== 'juz';
+  document.querySelectorAll('#juzChips input').forEach(c => c.checked = pick.juz.includes(+c.value));
+  const none = pick.mode === 'juz' && !pick.juz.length;
+  const n = none ? 0 : pool().length;
+  $('pickCount').textContent = none ? 'اختر الأجزاء التي تحفظها' : (n ? puzzles(n) : 'لا توجد ألغاز كاملة داخل هذه الأجزاء، أضف أجزاء أخرى');
+  $('pickClear').hidden = pick.mode === 'all';
+  $('pickGo').disabled = !n;
+}
+function showPick(){ renderPick(); $('pick').hidden = false; }
+function hidePick(){ $('pick').hidden = true; }
+function startPractice(){
+  let list = pool();
+  if (!list.length) { showPick(); return; }
+  if (list.length > 1 && S && S.practice) list = list.filter(i => i !== S.idx);
+  load(list[Math.floor(Math.random() * list.length)], true);
+  $('pwhat').textContent = pickLabel();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { pick.mode = t.dataset.mode; renderPick(); }));
+$('juzChips').addEventListener('change', e => {
+  const v = +e.target.value; pick.juz = e.target.checked ? pick.juz.concat(v) : pick.juz.filter(x => x !== v); renderPick();
+});
+$('pickClear').addEventListener('click', () => { pick.juz = []; renderPick(); });
+$('pickGo').addEventListener('click', () => { store.set('mut-pick', pick); hidePick(); startPractice(); });
+$('pickX').addEventListener('click', hidePick);
+$('pick').addEventListener('click', e => { if (e.target === $('pick')) hidePick(); });
+$('practice').addEventListener('click', showPick);
+$('again').addEventListener('click', startPractice);
+$('change').addEventListener('click', showPick);
 $('backDaily').addEventListener('click', () => { load(todayIndex(), false); window.scrollTo(0, 0); });
 $('share').addEventListener('click', () => {
   const grid = S.guesses.map(g => g.ok ? '🟩' : '🟥').join('');
@@ -419,7 +527,7 @@ $('helpBtn').addEventListener('click', showHelp);
 $('helpGo').addEventListener('click', hideHelp);
 $('helpX').addEventListener('click', hideHelp);
 $('help').addEventListener('click', e => { if (e.target === $('help')) hideHelp(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('help').hidden) hideHelp(); });
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('pick').hidden) hidePick(); else if (!$('help').hidden) hideHelp(); });
 
 load(todayIndex(), false);
 if (!store.get('mut-seen-help', 0)) showHelp();
