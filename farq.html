@@ -98,6 +98,13 @@ button:disabled{opacity:.5;cursor:default}
 .ayah .loc{display:block;font-size:.8rem;color:var(--gold);font-weight:600}
 .ayah mark{background:transparent;color:var(--accent);font-weight:700;border-bottom:2px solid var(--gold)}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modes.three{grid-template-columns:repeat(3,1fr)}
+a.mbtn{text-decoration:none}
+.games{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.gbtn{text-align:center;padding:7px 6px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.95rem;background:var(--surface)}
+.gbtn+.gbtn{border-inline-start:1px solid var(--line)}
+.gbtn.on{background:var(--hint-bg);color:var(--gold)}
+
 .mbtn{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--surface);color:var(--accent);border:1px solid var(--line);border-radius:12px;padding:9px 8px}
 .mbtn .mt{font-weight:700;font-size:1rem}
 .mbtn .ms{font-weight:400;font-size:.78rem;color:var(--muted)}
@@ -151,8 +158,6 @@ details p{margin:.4em 0}
 button.sm{padding:6px 10px;font-size:.88rem}
 .mode{font-size:.85rem;color:var(--gold);font-weight:600}
 
-.modes.three{grid-template-columns:repeat(3,1fr)}
-a.mbtn{text-decoration:none}
 .lead2{margin:0;color:var(--muted);text-align:center;font-size:.95rem;text-wrap:balance}
 .pairs{display:flex;flex-direction:column;gap:10px}
 .pcard{display:flex;align-items:center;gap:10px;width:100%;text-align:right;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font:inherit;font-weight:400;cursor:pointer}
@@ -193,11 +198,22 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <button type="button" class="help-btn ghost" id="helpBtn" aria-label="طريقة اللعب">؟</button></div>
   </header>
 
-  <nav class="modes three" aria-label="نوع اللعب">
-    <a class="mbtn" id="navDaily" href="index.html"><span class="mt">لغز اليوم</span><span class="ms">في أي سورة؟</span></a>
-    <a class="mbtn on" id="navFarq" href="farq.html" aria-current="page"><span class="mt">فرّق بينهما</span><span class="ms">موضعان متشابهان</span></a>
-    <a class="mbtn" id="navTrain" href="index.html#train"><span class="mt">تدرّب</span><span class="ms">على ما حفظته</span></a>
+  <nav class="modes" aria-label="نوع اللعب">
+    <button type="button" class="mbtn" id="modeDaily"><span class="mt">لغز اليوم</span><span class="ms">لغز جديد كل يوم</span></button>
+    <button type="button" class="mbtn" id="modeTrain"><span class="mt">تدرّب</span><span class="ms">على ما حفظته</span></button>
   </nav>
+  <nav class="games" aria-label="اللعبة">
+    <a class="gbtn" id="gameSurah" href="index.html">في أي سورة؟</a>
+    <a class="gbtn" id="gameFarq" href="farq.html">فرّق بينهما</a>
+  </nav>
+
+  <div class="pbar" id="pbar" hidden>
+    <span class="plabel">تدريب: <b id="pwhat"></b></span>
+    <div class="pbtns">
+      <button type="button" class="ghost sm" id="again">لغز آخر</button>
+      <button type="button" class="ghost sm" id="change">تغيير الاختيار</button>
+    </div>
+  </div>
 
   <p class="lead2">موضعان متشابهان من سورتين مختلفتين، والكلمات المختلفة بينهما ملوّنة. في أي سورة كل منهما؟</p>
 
@@ -237,6 +253,22 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   </footer>
 </div>
 
+<div class="overlay" id="pick" role="dialog" aria-modal="true" aria-labelledby="pickTitle" hidden>
+  <div class="panel" dir="rtl" lang="ar">
+    <button type="button" class="x" id="pickX" aria-label="إغلاق">×</button>
+    <h2 id="pickTitle">تدرّب على ما حفظته</h2>
+    <p class="small">اختر الأجزاء التي تحفظها، وستأتيك ألغاز كل مواضعها داخل هذه الأجزاء فقط.</p>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" class="tab" data-mode="all">كل القرآن</button>
+      <button type="button" role="tab" class="tab" data-mode="juz">الأجزاء التي حفظتها</button>
+    </div>
+    <div id="pickJuz" hidden>
+      <div class="chips juz" id="juzChips"></div>
+    </div>
+    <div class="pick-foot"><span id="pickCount"></span><button type="button" class="link" id="pickClear">مسح الاختيار</button></div>
+    <button type="button" id="pickGo" class="start">ابدأ</button>
+  </div>
+</div>
 <div class="overlay" id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
   <div class="panel" dir="rtl" lang="ar">
     <button type="button" class="x" id="helpX" aria-label="إغلاق">×</button>
@@ -267,6 +299,8 @@ const DIFF={"s":[[1,"الفاتحة","Al-Fatihah"],[2,"البقرة","Al-Baqarah
 (function(){
 if (typeof DIFF === 'undefined') { document.getElementById('msg').textContent = 'تعذر تحميل بيانات اللعبة.'; return; }
 const MAX_WRONG = 4;
+const GAME = 'farq';
+const WANT_TRAIN = location.hash === '#train';   // read before anything rewrites the address
 const SITE_URL = 'https://quranic-verses.github.io/mutashabihat/';
 const START = Date.UTC(2026, 9, 3); // puzzle #1 = 3 Oct 2026, Cairo date
 const LABEL = ['أ', 'ب'];
@@ -314,22 +348,20 @@ function todayIndex(){
   return Math.max(0, Math.round((Date.UTC(c.year, c.month - 1, c.day) - START) / 86400000));
 }
 
-// Links between the two games: relative on the live site, absolute anywhere else.
-if (!location.hostname.endsWith('github.io')) {
-  $('navDaily').href = SITE_URL; $('navTrain').href = SITE_URL + '#train'; $('navFarq').href = SITE_URL + 'farq.html';
-}
 
 let S;
-function load(idx){
+function load(idx, practice){
   player.pause(); playing = null;
   const [a, b, da, db] = DIFF.p[idx % DIFF.p.length];
   const key = 'farq-day-' + idx;
-  const saved = store.get(key, null);
-  S = { idx, key, P: [a, b], D: [da, db],
+  const saved = !practice && store.get(key, null);
+  S = { idx, key, practice: !!practice, P: [a, b], D: [da, db],
         solved: saved ? saved.solved : [false, false], guesses: saved ? saved.guesses : [],
         done: saved ? saved.done : false, active: 0 };
   S.active = S.solved[0] ? 1 : 0;
-  $('pnum').textContent = 'اللغز ' + toAr(idx + 1);
+  $('pnum').textContent = practice ? 'تدريب' : 'اللغز ' + toAr(idx + 1);
+  $('pbar').hidden = !practice;
+  setNav(!!practice);
   $('pdate').textContent = new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', timeZone:'Africa/Cairo'});
   $('msg').textContent = ''; $('msg').className = 'msg';
   $('guess').value = '';
@@ -372,11 +404,11 @@ function render(){
 }
 
 const THIRDS = ['الثلث الأول (الأجزاء ١–١٠)', 'الثلث الثاني (الأجزاء ١١–٢٠)', 'الثلث الأخير (الأجزاء ٢١–٣٠)'];
-function save(){ store.set(S.key, { solved: S.solved, guesses: S.guesses, done: S.done }); }
+function save(){ if (!S.practice) store.set(S.key, { solved: S.solved, guesses: S.guesses, done: S.done }); }
 function nextActive(){ if (S.solved[S.active] && !S.solved[1 - S.active]) S.active = 1 - S.active; }
 function finishIfOver(){
   const won = S.solved[0] && S.solved[1], lost = wrongCount() >= MAX_WRONG;
-  if (won || lost) { S.done = true; $('msg').textContent = ''; $('msg').className = 'msg'; recordStats(won); }
+  if (won || lost) { S.done = true; $('msg').textContent = ''; $('msg').className = 'msg'; if (!S.practice) recordStats(won); }
 }
 
 function useHint(){
@@ -428,6 +460,7 @@ function renderReveal(){
   const st = store.get('farq-stats', { played:0, wins:0, streak:0, best:0 });
   $('stats').innerHTML = [['لعبت', st.played], ['فوز %', st.played ? Math.round(100 * st.wins / st.played) : 0], ['التتابع', st.streak], ['أفضل تتابع', st.best]]
     .map(([l, v]) => `<div><b>${toAr(v)}</b><span>${l}</span></div>`).join('');
+  $('stats').hidden = S.practice; $('next').hidden = S.practice;
   tick();
 }
 
@@ -482,9 +515,90 @@ function tick(){
     const p = n => String(n).padStart(2, '0');
     el.textContent = 'اللغز التالي بعد ' + toAr(p(Math.floor(s / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60));
   }
-  if (todayIndex() !== S.idx) load(todayIndex());
+  if (!S.practice && todayIndex() !== S.idx) load(todayIndex(), false);
 }
 setInterval(tick, 1000);
+
+// ---------- Practice puzzles filtered by surah or juz ----------
+// "Memorized juz" mode: every place in the puzzle must lie inside the chosen juz,
+// so the selection never gives an answer away.
+const PICK_DEFAULT = { mode: 'all', juz: [] };
+let pick = Object.assign({}, PICK_DEFAULT, store.get('mut-pick', {}));
+if (pick.mode !== 'juz') pick.mode = 'all';
+if (!Array.isArray(pick.juz)) pick.juz = [];
+const juzOf = (s, a) => (DIFF.m[s + ':' + a] || [0])[0];
+
+$('juzChips').innerHTML = Array.from({length: 30}, (_, i) =>
+  `<label class="opt"><input type="checkbox" value="${i + 1}"><span>${toAr(i + 1)}</span></label>`).join('');
+
+function pool(){
+  const J1 = new Set(pick.juz), out = [];
+  DIFF.p.forEach((p, i) => {
+    if (pick.mode === 'all' || (J1.has(juzOf(p[0][0], p[0][1])) && J1.has(juzOf(p[1][0], p[1][1])))) out.push(i);
+  });
+  return out;
+}
+function pickLabel(){
+  if (pick.mode === 'juz') {
+    // show runs as ranges: 1, 2, 3, 7 -> ١–٣، ٧
+    const j = pick.juz.slice().sort((a, b) => a - b), parts = [];
+    for (let i = 0; i < j.length; i++) {
+      let k = i; while (k + 1 < j.length && j[k + 1] === j[k] + 1) k++;
+      parts.push(k > i ? toAr(j[i]) + '–' + toAr(j[k]) : toAr(j[i])); i = k;
+    }
+    return (j.length > 1 ? 'الأجزاء ' : 'الجزء ') + parts.join('، ');
+  }
+  return 'كل القرآن';
+}
+const puzzles = n => n === 1 ? 'لغز واحد متاح' : n === 2 ? 'لغزان متاحان'
+  : (n % 100 >= 3 && n % 100 <= 10) ? toAr(n) + ' ألغاز متاحة' : toAr(n) + ' لغزًا متاحًا';
+function renderPick(){
+  document.querySelectorAll('.tab').forEach(t => { const on = t.dataset.mode === pick.mode; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
+  $('pickJuz').hidden = pick.mode !== 'juz';
+  document.querySelectorAll('#juzChips input').forEach(c => c.checked = pick.juz.includes(+c.value));
+  const none = pick.mode === 'juz' && !pick.juz.length;
+  const n = none ? 0 : pool().length;
+  $('pickCount').textContent = none ? 'اختر الأجزاء التي تحفظها' : (n ? puzzles(n) : 'لا توجد ألغاز كاملة داخل هذه الأجزاء، أضف أجزاء أخرى');
+  $('pickClear').hidden = pick.mode === 'all';
+  $('pickGo').disabled = !n;
+}
+function showPick(){ renderPick(); $('pick').hidden = false; }
+function hidePick(){ $('pick').hidden = true; }
+function startPractice(){
+  let list = pool();
+  if (!list.length) { showPick(); return; }
+  if (list.length > 1 && S && S.practice) list = list.filter(i => i !== S.idx);
+  load(list[Math.floor(Math.random() * list.length)], true);
+  $('pwhat').textContent = pickLabel();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { pick.mode = t.dataset.mode; renderPick(); }));
+$('juzChips').addEventListener('change', e => {
+  const v = +e.target.value; pick.juz = e.target.checked ? pick.juz.concat(v) : pick.juz.filter(x => x !== v); renderPick();
+});
+$('pickClear').addEventListener('click', () => { pick.juz = []; renderPick(); });
+$('pickGo').addEventListener('click', () => { store.set('mut-pick', pick); hidePick(); startPractice(); });
+$('pickX').addEventListener('click', hidePick);
+$('pick').addEventListener('click', e => { if (e.target === $('pick')) hidePick(); });
+$('again').addEventListener('click', startPractice);
+$('change').addEventListener('click', showPick);
+
+// ---------- Navigation: daily / practice × the two games ----------
+function setNav(practice){
+  if (!practice && location.hash === '#train') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+  $('modeDaily').classList.toggle('on', !practice); $('modeDaily').setAttribute('aria-pressed', !practice);
+  $('modeTrain').classList.toggle('on', practice); $('modeTrain').setAttribute('aria-pressed', practice);
+  const base = location.hostname.endsWith('github.io') ? '' : SITE_URL;
+  const tag = practice ? '#train' : '';
+  $('gameSurah').href = (base || '') + (base ? '' : 'index.html') + tag;
+  $('gameFarq').href = base + 'farq.html' + tag;
+  $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq');
+}
+['gameSurah', 'gameFarq'].forEach(id => $(id).addEventListener('click', e => {
+  if ((id === 'gameSurah') === (GAME === 'surah')) e.preventDefault();   // already on this game
+}));
+$('modeDaily').addEventListener('click', () => { if (S && S.practice) load(todayIndex(), false); });
+$('modeTrain').addEventListener('click', showPick);
 
 $('pairs').addEventListener('click', e => {
   const c = e.target.closest('.pcard'); if (!c || S.done) return;
@@ -497,7 +611,8 @@ $('guessForm').addEventListener('submit', e => { e.preventDefault(); guess($('gu
 $('share').addEventListener('click', () => {
   const grid = S.guesses.map(g => g.h ? '💡' : g.ok ? '🟩' : '🟥').join('');
   const n = S.solved.filter(Boolean).length;
-  const text = `فرّق بينهما ${toAr(S.idx + 1)} · متشابه اليوم\n${toAr(n)}/٢ ${grid}\n${SITE_URL}farq.html`;
+  const head = S.practice ? 'فرّق بينهما (تدريب)' : `فرّق بينهما ${toAr(S.idx + 1)}`;
+  const text = `${head} · متشابه اليوم\n${toAr(n)}/٢ ${grid}\n${SITE_URL}farq.html`;
   const done = () => { $('msg').textContent = 'تم نسخ النتيجة.'; $('msg').className = 'msg ok'; };
   const fallback = () => { $('msg').textContent = text; $('msg').className = 'msg'; };
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
@@ -509,10 +624,11 @@ $('helpBtn').addEventListener('click', showHelp);
 $('helpGo').addEventListener('click', hideHelp);
 $('helpX').addEventListener('click', hideHelp);
 $('help').addEventListener('click', e => { if (e.target === $('help')) hideHelp(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('help').hidden) hideHelp(); });
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('pick').hidden) hidePick(); else if (!$('help').hidden) hideHelp(); });
 
-load(todayIndex());
+load(todayIndex(), false);
 if (!store.get('farq-seen-help', 0)) showHelp();
+if (WANT_TRAIN) showPick();
 })();
 </script>
 

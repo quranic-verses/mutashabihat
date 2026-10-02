@@ -100,6 +100,11 @@ button:disabled{opacity:.5;cursor:default}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .modes.three{grid-template-columns:repeat(3,1fr)}
 a.mbtn{text-decoration:none}
+.games{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.gbtn{text-align:center;padding:7px 6px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.95rem;background:var(--surface)}
+.gbtn+.gbtn{border-inline-start:1px solid var(--line)}
+.gbtn.on{background:var(--hint-bg);color:var(--gold)}
+
 .mbtn{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--surface);color:var(--accent);border:1px solid var(--line);border-radius:12px;padding:9px 8px}
 .mbtn .mt{font-weight:700;font-size:1rem}
 .mbtn .ms{font-weight:400;font-size:.78rem;color:var(--muted)}
@@ -178,10 +183,13 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <button type="button" class="help-btn ghost" id="helpBtn" aria-label="طريقة اللعب">؟</button></div>
   </header>
 
-  <nav class="modes three" aria-label="نوع اللعب">
-    <button type="button" class="mbtn" id="modeDaily"><span class="mt">لغز اليوم</span><span class="ms">في أي سورة؟</span></button>
-    <a class="mbtn" id="modeFarq" href="farq.html"><span class="mt">فرّق بينهما</span><span class="ms">موضعان متشابهان</span></a>
+  <nav class="modes" aria-label="نوع اللعب">
+    <button type="button" class="mbtn" id="modeDaily"><span class="mt">لغز اليوم</span><span class="ms">لغز جديد كل يوم</span></button>
     <button type="button" class="mbtn" id="modeTrain"><span class="mt">تدرّب</span><span class="ms">على ما حفظته</span></button>
+  </nav>
+  <nav class="games" aria-label="اللعبة">
+    <a class="gbtn" id="gameSurah" href="index.html">في أي سورة؟</a>
+    <a class="gbtn" id="gameFarq" href="farq.html">فرّق بينهما</a>
   </nav>
 
   <div class="pbar" id="pbar" hidden>
@@ -291,6 +299,8 @@ const DATA={"s":[[1,"الفاتحة","Al-Fatihah"],[2,"البقرة","Al-Baqarah
 (function(){
 if (typeof DATA === 'undefined') { document.getElementById('msg').textContent = 'تعذر تحميل بيانات اللعبة.'; return; }
 const MAX_WRONG = 4;
+const GAME = 'surah';
+const WANT_TRAIN = location.hash === '#train';   // read before anything rewrites the address
 const SITE_URL = 'https://quranic-verses.github.io/mutashabihat/';
 const START = Date.UTC(2026, 9, 2); // puzzle #1 = 2 Oct 2026, Cairo date
 const FIX = {14:'إبراهيم',34:'سبأ',78:'النبأ',76:'الإنسان',82:'الانفطار',84:'الانشقاق'};
@@ -357,8 +367,7 @@ function load(idx, practice){
   $('pdate').textContent = new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', timeZone:'Africa/Cairo'});
   $('mode').textContent = '';
   $('pbar').hidden = !practice;
-  $('modeDaily').classList.toggle('on', !practice); $('modeDaily').setAttribute('aria-pressed', !practice);
-  $('modeTrain').classList.toggle('on', practice); $('modeTrain').setAttribute('aria-pressed', practice);
+  setNav(practice);
   $('phrase').textContent = text;
   $('count').innerHTML = 'تكرر ' + times(spans.length);
   $('scount').innerHTML = 'في ' + nSurahs(S.surahs.length);
@@ -592,6 +601,20 @@ $('pickX').addEventListener('click', hidePick);
 $('pick').addEventListener('click', e => { if (e.target === $('pick')) hidePick(); });
 $('again').addEventListener('click', startPractice);
 $('change').addEventListener('click', showPick);
+// ---------- Navigation: daily / practice × the two games ----------
+function setNav(practice){
+  if (!practice && location.hash === '#train') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+  $('modeDaily').classList.toggle('on', !practice); $('modeDaily').setAttribute('aria-pressed', !practice);
+  $('modeTrain').classList.toggle('on', practice); $('modeTrain').setAttribute('aria-pressed', practice);
+  const base = location.hostname.endsWith('github.io') ? '' : SITE_URL;
+  const tag = practice ? '#train' : '';
+  $('gameSurah').href = (base || '') + (base ? '' : 'index.html') + tag;
+  $('gameFarq').href = base + 'farq.html' + tag;
+  $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq');
+}
+['gameSurah', 'gameFarq'].forEach(id => $(id).addEventListener('click', e => {
+  if ((id === 'gameSurah') === (GAME === 'surah')) e.preventDefault();   // already on this game
+}));
 $('modeDaily').addEventListener('click', () => { if (S && S.practice) load(todayIndex(), false); });
 $('modeTrain').addEventListener('click', showPick);
 $('share').addEventListener('click', () => {
@@ -622,8 +645,7 @@ document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (
 
 load(todayIndex(), false);
 if (!store.get('mut-seen-help', 0)) showHelp();
-if (location.hash === '#train') showPick();
-if (!location.hostname.endsWith('github.io')) $('modeFarq').href = SITE_URL + 'farq.html';
+if (WANT_TRAIN) showPick();
 })();
 </script>
 </body>
