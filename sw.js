@@ -1,8 +1,8 @@
 // متشابهات القرآن الكريم — offline support.
 // Pages: always checked with GitHub first (so updates show up right away), cached copy when offline.
 // Fonts: cached after the first visit. Recitation audio is never cached.
-const CACHE = 'mutashabih-v4';
-const CORE = ['./', './index.html', './farq.html', './aya.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'mutashabih-v5';
+const CORE = ['./', './index.html', './farq.html', './kalima.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

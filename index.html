@@ -243,7 +243,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   <nav class="games" aria-label="نوع السؤال">
     <a class="gbtn" id="gameSurah" href="./">أين ورد؟</a>
     <a class="gbtn" id="gameFarq" href="farq.html">ميّز بينهما</a>
-    <a class="gbtn" id="gameAya" href="aya.html">من أي سورة؟</a>
+    <a class="gbtn" id="gameKal" href="kalima.html">لم تتكرر</a>
   </nav>
 
   <div class="pbar" id="pbar" hidden>
@@ -362,7 +362,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <ul>
       <li><b>أين ورد؟</b> عبارة تتكرر في القرآن، فاكتب السور التي وردت فيها.</li>
       <li><b>ميّز بينهما</b> موضعان متشابهان، فاعرف سورة كل منهما.</li>
-      <li><b>من أي سورة؟</b> آية من القرآن، فاكتب سورتها.</li>
+      <li><b>لم تتكرر</b> ثلاث كلمات، واحدة منها فقط وردت في القرآن مرة واحدة، فاخترها.</li>
     </ul>
     <p class="small">لكل سؤال ٦ محاولات وتلميحان. اختبار جديد كل يوم عند منتصف الليل بتوقيت القاهرة، و«تدرّب» على الأجزاء التي تحفظها متى شئت. زر «؟» يشرح كل اختبار بالتفصيل.</p>
     <button type="button" id="welcomeGo" class="start">ابدأ</button>
@@ -753,10 +753,10 @@ function setNav(practice){
   const tag = practice ? '#train' : '';
   $('gameSurah').href = home + tag;
   $('gameFarq').href = 'farq.html' + tag;
-  $('gameAya').href = 'aya.html' + tag;
-  $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq'); $('gameAya').classList.toggle('on', GAME === 'aya');
+  $('gameKal').href = 'kalima.html' + tag;
+  $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq'); $('gameKal').classList.toggle('on', GAME === 'kal');
 }
-[['gameSurah', 'surah'], ['gameFarq', 'farq'], ['gameAya', 'aya']].forEach(([id, g]) => $(id).addEventListener('click', e => {
+[['gameSurah', 'surah'], ['gameFarq', 'farq'], ['gameKal', 'kal']].forEach(([id, g]) => $(id).addEventListener('click', e => {
   if (g === GAME) e.preventDefault();   // already on this game
 }));
 $('modeDaily').addEventListener('click', () => { if (S && (S.practice || S.archive)) load(todayIndex(), false); });
@@ -804,12 +804,12 @@ function saveSummary(n, total, grid){
   store.set('sum-surah-' + cairoDateKey(), { num: S.idx + 1, n, total, grid, hard: HARD });
 }
 function dailyShareText(){
-  const k = cairoDateKey(), a = store.get('sum-surah-' + k, null), b = store.get('sum-farq-' + k, null), c = store.get('sum-aya-' + k, null);
+  const k = cairoDateKey(), a = store.get('sum-surah-' + k, null), b = store.get('sum-farq-' + k, null), c = store.get('sum-kal-' + k, null);
   const lines = ['متشابهات القرآن الكريم — ' + new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone:'Africa/Cairo'})];
   // words instead of "٢: ٠/٢" and "·", which WhatsApp shows jumbled or as an Arabic zero
   if (a) lines.push('', `أين ورد؟${a.hard ? ' (صعب)' : ''}`, `${toAr(a.n)} من ${toAr(a.total)} ${a.grid}`);
   if (b) lines.push('', `ميّز بينهما${b.hard ? ' (صعب)' : ''}`, `${toAr(b.n)} من ${toAr(b.total)} ${b.grid}`);
-  if (c) lines.push('', `من أي سورة؟${c.hard ? ' (صعب)' : ''}`, `${c.n ? 'عرفتها' : 'لم أعرفها'} ${c.grid}`);
+  if (c) lines.push('', 'لم تتكرر', `${toAr(c.n)} من ${toAr(c.total)} ${c.grid}`);
   if (a && b && c) lines.push('', '✅ أتممت اختبارات اليوم الثلاثة');
   lines.push('');
   lines.push(SITE_URL);
@@ -944,7 +944,7 @@ $('help').addEventListener('click', e => { if (e.target === $('help')) hideHelp(
 document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('arch').hidden) hideArch(); else if (!$('pick').hidden) hidePick(); else if (!$('help').hidden) hideHelp(); });
 
 // ---------- Today's three quizzes: ✓ on the tabs, what is left after finishing, one welcome screen ----------
-const GAMES = [['surah', 'gameSurah', 'أين ورد؟'], ['farq', 'gameFarq', 'ميّز بينهما'], ['aya', 'gameAya', 'من أي سورة؟']];
+const GAMES = [['surah', 'gameSurah', 'أين ورد؟'], ['farq', 'gameFarq', 'ميّز بينهما'], ['kal', 'gameKal', 'لم تتكرر']];
 const doneToday = g => !!store.get('sum-' + g + '-' + cairoDateKey(), null);
 function markTabs(){
   GAMES.forEach(([g, id, name]) => {
@@ -975,7 +975,7 @@ $('welcomeX').addEventListener('click', hideWelcome);
 $('welcome').addEventListener('click', e => { if (e.target === $('welcome')) hideWelcome(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('welcome').hidden) hideWelcome(); });
 // first visit to the site (any of the three pages): one short welcome; each quiz's details stay behind «؟»
-const FIRST_VISIT = !store.get('mut-welcome', 0) && !store.get('mut-seen-help', 0) && !store.get('farq-seen-help', 0) && !store.get('aya-seen-help', 0);
+const FIRST_VISIT = !store.get('mut-welcome', 0) && !store.get('mut-seen-help', 0) && !store.get('farq-seen-help', 0) && !store.get('aya-seen-help', 0) && !store.get('kal-seen-help', 0);
 // ---------- Install banner: shown after today's question; one tap on Android, the two Share steps on iPhone ----------
 let installEvt = null;
 const STANDALONE = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
