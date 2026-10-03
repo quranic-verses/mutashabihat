@@ -8,12 +8,12 @@
 <meta property="og:url" content="https://quranic-verses.github.io/mutashabihat/farq.html">
 <meta property="og:title" content="فرّق بينهما · متشابه اليوم">
 <meta property="og:description" content="موضعان متشابهان من القرآن، فاعرف سورة كل منهما. لغز جديد كل يوم.">
-<meta property="og:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png">
+<meta property="og:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ar_AR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png">
+<meta name="twitter:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -62,6 +62,8 @@ h1{font-family:var(--f-display);font-weight:700;font-size:2.1rem;line-height:1.4
 .chip{border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.92rem;color:var(--muted)}
 .chip b{color:var(--ink);font-variant-numeric:tabular-nums}
 .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.slots .ayah{grid-column:1/-1}
+.ayah.found{border-color:var(--ok)}
 .slot{min-height:52px;border-radius:10px;background:var(--empty);border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;padding:6px}
 .slot.found{background:var(--ok-bg);border:1px solid var(--ok);color:var(--ok);animation:pop .35s ease}
 .slot.missed{background:transparent;border:1px solid var(--bad);color:var(--bad)}
@@ -124,6 +126,7 @@ a.mbtn{text-decoration:none}
 .arow .adate{color:var(--muted);font-weight:400;font-size:.85rem}
 .arow .ast{font-size:.82rem;font-weight:600;min-width:64px;text-align:left}
 .ast.ok{color:var(--ok)} .ast.bad{color:var(--bad)} .ast.new{color:var(--muted)} .ast.cur{color:var(--gold)}
+.btn-link{display:inline-flex;align-items:center;justify-content:center;font-weight:600;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:10px 16px;text-decoration:none}
 .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
 .stats div{border:1px solid var(--line);border-radius:10px;padding:8px 4px;background:var(--surface)}
@@ -244,10 +247,13 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   </div>
   <div class="msg" id="msg" role="status"></div>
 
+  <ul class="log" id="log"></ul>
+
   <section class="reveal" id="reveal" hidden>
     <h2 id="resultTitle"></h2>
     <div class="row">
-      <button type="button" id="share">نسخ النتيجة</button>
+      <a class="btn-link" id="shareNative" href="#" target="_blank" rel="noopener">مشاركة</a>
+      <button type="button" class="ghost" id="share">نسخ النتيجة</button>
     </div>
     <p class="next" id="next"></p>
     <div class="stats" id="stats"></div>
@@ -257,8 +263,6 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <h2 id="ayatTitle">الآيات</h2>
     <div id="ayat" class="reveal"></div>
   </section>
-
-  <ul class="log" id="log"></ul>
 
   <footer class="credits">
     التلاوة: الشيخ محمود خليل الحصري، عبر <a href="https://alquran.cloud" target="_blank" rel="noopener">Islamic Network</a> ·
@@ -612,10 +616,12 @@ function setNav(practice){
   if (!practice && location.hash === '#train') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
   $('modeDaily').classList.toggle('on', !practice); $('modeDaily').setAttribute('aria-pressed', !practice);
   $('modeTrain').classList.toggle('on', practice); $('modeTrain').setAttribute('aria-pressed', practice);
-  const base = location.hostname.endsWith('github.io') ? '' : SITE_URL;
+  // Relative links, so the two games link to each other wherever they are hosted (live site or preview).
+  // On GitHub the home page is "./" (the same address players open, so no stale saved copy).
+  const home = location.hostname.endsWith('github.io') ? './' : 'index.html';
   const tag = practice ? '#train' : '';
-  $('gameSurah').href = (base || './') + tag;   // same address as the home page, so no stale copy
-  $('gameFarq').href = base + 'farq.html' + tag;
+  $('gameSurah').href = home + tag;
+  $('gameFarq').href = 'farq.html' + tag;
   $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq');
 }
 ['gameSurah', 'gameFarq'].forEach(id => $(id).addEventListener('click', e => {
@@ -668,21 +674,38 @@ function saveSummary(n, total, grid){
 }
 function dailyShareText(){
   const k = cairoDateKey(), a = store.get('sum-surah-' + k, null), b = store.get('sum-farq-' + k, null);
-  const lines = ['متشابه اليوم · ' + new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone:'Africa/Cairo'})];
-  if (a) lines.push(`في أي سورة؟ ${toAr(a.num)}: ${toAr(a.n)}/${toAr(a.total)} ${a.grid}`);
-  if (b) lines.push(`فرّق بينهما ${toAr(b.num)}: ${toAr(b.n)}/${toAr(b.total)} ${b.grid}`);
+  const lines = ['متشابه اليوم — ' + new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone:'Africa/Cairo'})];
+  // words instead of "٢: ٠/٢" and "·", which WhatsApp shows jumbled or as an Arabic zero
+  if (a) lines.push('', `في أي سورة؟ — اللغز ${toAr(a.num)}`, `${toAr(a.n)} من ${toAr(a.total)} ${a.grid}`);
+  if (b) lines.push('', `فرّق بينهما — اللغز ${toAr(b.num)}`, `${toAr(b.n)} من ${toAr(b.total)} ${b.grid}`);
+  lines.push('');
   lines.push(SITE_URL);
   return lines.join('\n');
 }
 
-$('share').addEventListener('click', () => {
+function resultText(){
   const grid = S.guesses.map(g => g.h ? '💡' : g.ok ? '🟩' : '🟥').join('');
   const n = S.solved.filter(Boolean).length;
-  const head = S.practice ? 'فرّق بينهما (تدريب)' : `فرّق بينهما ${toAr(S.idx + 1)} (من الأرشيف)`;
-  const text = (S.practice || S.archive) ? `${head} · متشابه اليوم\n${toAr(n)}/٢ ${grid}\n${SITE_URL}farq.html` : dailyShareText();
+  const head = S.practice ? 'فرّق بينهما — تدريب' : `فرّق بينهما — اللغز ${toAr(S.idx + 1)} (من الأرشيف)`;
+  const text = (S.practice || S.archive) ? `متشابه اليوم\n${head}\n${toAr(n)} من ٢ ${grid}\n\n${SITE_URL}farq.html` : dailyShareText();
+  return text;
+}
+$('share').addEventListener('click', () => {
+  const text = resultText();
   const done = () => { $('msg').textContent = 'تم نسخ النتيجة.'; $('msg').className = 'msg ok'; };
   const fallback = () => { $('msg').textContent = text; $('msg').className = 'msg'; };
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+});
+
+// Share: the phone's own share sheet (WhatsApp, Telegram…) where available, otherwise WhatsApp directly.
+$('shareNative').addEventListener('click', e => {
+  const text = resultText();
+  if (navigator.share) {
+    e.preventDefault();
+    navigator.share({ text }).catch(() => {});
+  } else {
+    $('shareNative').href = 'https://wa.me/?text=' + encodeURIComponent(text);   // opens WhatsApp in a new tab
+  }
 });
 
 function showHelp(){ $('help').hidden = false; $('helpGo').focus(); }
