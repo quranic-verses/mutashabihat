@@ -136,6 +136,11 @@ header .head-side{display:contents}
 .ast.ok{color:var(--ok)} .ast.bad{color:var(--bad)} .ast.new{color:var(--muted)} .ast.cur{color:var(--gold)}
 .btn-link{display:inline-flex;align-items:center;justify-content:center;font-weight:600;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:10px 16px;text-decoration:none}
 .btn-link.ghostlink{background:transparent;color:var(--accent)}
+.ibar{position:fixed;left:12px;right:12px;bottom:12px;max-width:596px;margin-inline:auto;z-index:9;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--accent);border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.18);padding:10px 12px}
+body:has(#ibar:not([hidden])) .wrap{padding-bottom:130px}
+.itext{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:.9rem}
+.itext span{color:var(--muted);font-size:.82rem}
+.ix{background:transparent;border:none;color:var(--muted);font-size:1.4rem;line-height:1;padding:4px 6px}
 .sharenote{margin:0;text-align:center;font-size:.8rem;color:var(--muted)}
 .tick{color:var(--ok);font-weight:700}
 .today{margin:0;text-align:center;font-size:.95rem;color:var(--muted)} .today a{color:var(--accent);font-weight:600} .today b{color:var(--ok)}
@@ -362,6 +367,11 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <p class="small">لكل سؤال ٦ محاولات وتلميحان. اختبار جديد كل يوم عند منتصف الليل بتوقيت القاهرة، و«تدرّب» على الأجزاء التي تحفظها متى شئت. زر «؟» يشرح كل اختبار بالتفصيل.</p>
     <button type="button" id="welcomeGo" class="start">ابدأ</button>
   </div>
+</div>
+<div class="ibar" id="ibar" role="region" aria-label="تثبيت التطبيق" hidden>
+  <div class="itext"><b>أضف متشابهات القرآن الكريم إلى شاشتك الرئيسية</b><span id="ihow"></span></div>
+  <button type="button" id="ibtn" class="sm">تثبيت</button>
+  <button type="button" class="ix" id="ix" aria-label="إخفاء">×</button>
 </div>
 <script>
 window.addEventListener('error', function(){
@@ -637,6 +647,7 @@ function renderReveal(){
   $('stats').hidden = S.practice || S.archive; $('next').hidden = S.practice || S.archive;
   saveSummary(S.found.length, S.surahs.length, S.guesses.map(g => g.h ? '💡' : g.ok ? '🟩' : '🟥').join(''));
   renderToday();
+  maybeInstallBar();
   $('report').href = reportLink('أين ورد؟', S.text + '\nالمواضع: ' + S.spans.map(([s, a]) => SURAH[s] + ' ' + a).join('، '));
   renderDist();
   tick();
@@ -834,14 +845,7 @@ $('shareNative').addEventListener('click', e => {
 
 function showHelp(){ $('help').hidden = false; $('helpGo').focus(); }
 function hideHelp(){ $('help').hidden = true; store.set('mut-seen-help', 1); $('guess').focus(); }
-// Install prompt (Android / desktop Chrome). iPhone uses Share → Add to Home Screen.
-let installEvt = null;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('installBtn').hidden = false; });
-$('installBtn').addEventListener('click', () => {
-  if (!installEvt) return;
-  installEvt.prompt();
-  installEvt.userChoice.finally(() => { installEvt = null; $('installBtn').hidden = true; });
-});
+// Install: see the install banner code further down (one tap on Android; iPhone uses Share → Add to Home Screen).
 if (window.matchMedia && matchMedia('(display-mode: standalone)').matches) $('installNote').hidden = true;
 // ---------- Light / dark mode (remembered; follows the phone until the player chooses) ----------
 const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
@@ -972,6 +976,29 @@ $('welcome').addEventListener('click', e => { if (e.target === $('welcome')) hid
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('welcome').hidden) hideWelcome(); });
 // first visit to the site (any of the three pages): one short welcome; each quiz's details stay behind «؟»
 const FIRST_VISIT = !store.get('mut-welcome', 0) && !store.get('mut-seen-help', 0) && !store.get('farq-seen-help', 0) && !store.get('aya-seen-help', 0);
+// ---------- Install banner: shown after today's question; one tap on Android, the two Share steps on iPhone ----------
+let installEvt = null;
+const STANDALONE = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function maybeInstallBar(){
+  if (STANDALONE || store.get('mut-installed', 0) || Date.now() < store.get('mut-install-later', 0)) return;
+  if (!S || S.practice || S.archive || !S.done) return;
+  if (installEvt) { $('ihow').textContent = 'بضغطة واحدة، ويعمل بدون إنترنت'; $('ibtn').hidden = false; }
+  else if (IOS) { $('ihow').innerHTML = 'من Safari: اضغط زر المشاركة <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="زر المشاركة" style="vertical-align:-2px"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg> ثم «إضافة إلى الشاشة الرئيسية»'; $('ibtn').hidden = true; }
+  else return;                       // this browser can't install sites (or hasn't offered yet)
+  $('ibar').hidden = false;
+}
+function doInstall(){
+  if (!installEvt) return;
+  installEvt.prompt();
+  installEvt.userChoice.then(c => { if (c && c.outcome === 'accepted') store.set('mut-installed', 1); }).catch(() => {})
+    .finally(() => { installEvt = null; $('ibar').hidden = true; if ($('installBtn')) $('installBtn').hidden = true; });
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if ($('installBtn')) $('installBtn').hidden = false; maybeInstallBar(); });
+window.addEventListener('appinstalled', () => { installEvt = null; store.set('mut-installed', 1); $('ibar').hidden = true; });
+$('ibtn').addEventListener('click', doInstall);
+$('ix').addEventListener('click', () => { $('ibar').hidden = true; store.set('mut-install-later', Date.now() + 30 * 86400000); });
+if ($('installBtn')) $('installBtn').addEventListener('click', doInstall);
 load(todayIndex(), false);
 markTabs();
 if (FIRST_VISIT) showWelcome();
