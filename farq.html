@@ -54,6 +54,8 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
 h1{font-family:var(--f-display);font-weight:700;font-size:2.1rem;line-height:1.4;margin:0;color:var(--accent);text-wrap:balance}
 .meta{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
 .meta>*{unicode-bidi:isolate}
+.meta .dates{display:block;margin-top:2px}
+.arow .adate small{display:block;font-size:.75rem}
 .meta .sep{margin-inline:7px;color:var(--line)}   /* a bar, not "·", which looks like the Arabic zero ٠ */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 18px;text-align:center;display:flex;flex-direction:column;gap:12px}
 .phrase{font-family:var(--f-quran);font-size:clamp(1.6rem,6vw,2.2rem);line-height:2.1;margin:0;word-spacing:.08em}
@@ -229,7 +231,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
 <div class="wrap" dir="rtl" lang="ar">
   <header>
     <h1>متشابهات القرآن الكريم</h1>
-    <div class="head-side"><div class="meta"><span id="pnum"></span><span class="sep">|</span><span id="pdate"></span><span class="sep">|</span><button type="button" class="arch-link" id="archBtn">الاختبارات السابقة</button></div>
+    <div class="head-side"><div class="meta"><span id="pnum"></span><span class="sep">|</span><button type="button" class="arch-link" id="archBtn">الاختبارات السابقة</button><span id="pdate" class="dates"></span></div>
     <button type="button" class="help-btn ghost" id="soundBtn" aria-label="إيقاف الأصوات"></button>
     <button type="button" class="help-btn ghost" id="themeBtn" aria-label="الوضع الداكن"></button>
     <button type="button" class="help-btn ghost" id="helpBtn" aria-label="طريقة الاختبار">؟</button></div>
@@ -437,11 +439,11 @@ function load(idx, practice, archive){
         solved: saved ? saved.solved : [false, false], guesses: saved ? saved.guesses : [],
         done: saved ? saved.done : false, active: 0 };
   S.active = S.solved[0] ? 1 : 0;
-  $('pnum').textContent = practice ? 'تدريب' : 'الاختبار ' + toAr(idx + 1) + (archive ? ' · من الأرشيف' : '');
+  $('pnum').textContent = practice ? 'تدريب' : 'الاختبار ' + toAr(idx + 1) + (archive ? ' (من الأرشيف)' : '');
   $('archBtn').hidden = !!practice;
   $('pbar').hidden = !practice;
   setNav(!!practice);
-  $('pdate').textContent = archive ? dayLabel(idx) : new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone:'Africa/Cairo'});
+  $('pdate').innerHTML = archive ? bothDates(new Date(START + idx * 86400000), 'UTC') : bothDates(new Date(), 'Africa/Cairo');
   $('msg').textContent = ''; $('msg').className = 'msg';
   $('guess').value = '';
   render();
@@ -691,6 +693,13 @@ $('hintBtn').addEventListener('click', useHint);
 $('guessForm').addEventListener('submit', e => { e.preventDefault(); const n = S.guesses.length; guess($('guess').value); guessSound(n); });
 
 // ---------- Archive of past daily puzzles ----------
+// Gregorian + Hijri (Umm al-Qura calendar, built into the browser)
+function hijri(d, tz){ try { return d.toLocaleDateString('ar-EG-u-ca-islamic-umalqura', {day:'numeric', month:'long', year:'numeric', timeZone: tz}); } catch (e) { return ''; } }
+function bothDates(d, tz){
+  const g = d.toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone: tz}) + ' م';
+  const h = hijri(d, tz);
+  return esc(g) + (h ? '<span class="sep">|</span>' + esc(h) : '');
+}
 const dayLabel = i => new Date(START + i * 86400000).toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone:'UTC'});
 function archStatus(i){
   const s = store.get('farq-day-' + i, null);
@@ -702,7 +711,7 @@ function showArch(){
   const today = todayIndex(), rows = [];
   for (let i = today; i >= 0; i--) {
     const [cls, txt] = i === today ? ['cur', 'اليوم'] : archStatus(i);
-    rows.push(`<button type="button" class="arow" data-i="${i}"><span>الاختبار ${toAr(i + 1)}</span><span class="adate">${dayLabel(i)}</span><span class="ast ${cls}">${txt}</span></button>`);
+    rows.push(`<button type="button" class="arow" data-i="${i}"><span>الاختبار ${toAr(i + 1)}</span><span class="adate">${dayLabel(i)}<small>${esc(hijri(new Date(START + i * 86400000), 'UTC'))}</small></span><span class="ast ${cls}">${txt}</span></button>`);
   }
   $('alist').innerHTML = rows.join('');
   $('arch').hidden = false;
