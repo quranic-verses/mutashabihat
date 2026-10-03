@@ -727,8 +727,8 @@ function dailyShareText(){
   const k = cairoDateKey(), a = store.get('sum-surah-' + k, null), b = store.get('sum-farq-' + k, null);
   const lines = ['متشابهات القرآن الكريم — ' + new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone:'Africa/Cairo'})];
   // words instead of "٢: ٠/٢" and "·", which WhatsApp shows jumbled or as an Arabic zero
-  if (a) lines.push('', `في أي سورة؟ — الاختبار ${toAr(a.num)}${a.hard ? ' (صعب)' : ''}`, `${toAr(a.n)} من ${toAr(a.total)} ${a.grid}`);
-  if (b) lines.push('', `فرّق بينهما — الاختبار ${toAr(b.num)}${b.hard ? ' (صعب)' : ''}`, `${toAr(b.n)} من ${toAr(b.total)} ${b.grid}`);
+  if (a) lines.push('', `في أي سورة؟${a.hard ? ' (صعب)' : ''}`, `${toAr(a.n)} من ${toAr(a.total)} ${a.grid}`);
+  if (b) lines.push('', `فرّق بينهما${b.hard ? ' (صعب)' : ''}`, `${toAr(b.n)} من ${toAr(b.total)} ${b.grid}`);
   lines.push('');
   lines.push(SITE_URL);
   return lines.join('\n');
