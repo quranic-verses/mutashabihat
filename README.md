@@ -11,4 +11,4 @@
 
 اللغز يتغير تلقائيًا كل يوم عند منتصف الليل بتوقيت القاهرة لكل اللاعبين. اللغز رقم ١ هو يوم 2 أكتوبر 2026.
 
-Quran text: Madinah mushaf (Hafs) via quran-json / QuranEnc. Audio: Mahmoud Khalil Al-Husary (murattal) via the Islamic Network CDN (cdn.islamic.network). Juz/hizb/rub: quran-meta (MIT).
+Quran text: Tanzil Quran Text (Uthmani, Version 1.1), Copyright (C) 2007-2026 Tanzil Project, CC BY 3.0, used verbatim — https://tanzil.net (the full Tanzil copyright notice is kept inside index.html and farq.html). Audio: Mahmoud Khalil Al-Husary (murattal) via the Islamic Network CDN (cdn.islamic.network). Juz/hizb/rub: quran-meta (MIT).
