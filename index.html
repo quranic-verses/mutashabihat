@@ -8,12 +8,12 @@
 <meta property="og:url" content="https://quranic-verses.github.io/mutashabihat/">
 <meta property="og:title" content="متشابه اليوم">
 <meta property="og:description" content="لغز يومي في متشابهات القرآن الكريم: في أي سورة ورد هذا الموضع؟">
-<meta property="og:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=2">
+<meta property="og:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=3">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ar_AR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=2">
+<meta name="twitter:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=3">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -698,7 +698,10 @@ $('shareNative').addEventListener('click', e => {
   const text = resultText();
   if (navigator.share) {
     e.preventDefault();
-    navigator.share({ text }).catch(() => {});
+    // The link goes in its own "url" field: apps like WhatsApp then treat it as a link and show the preview card.
+    const m = text.match(/https?:\/\/\S+\s*$/);
+    const url = m ? m[0].trim() : SITE_URL;
+    navigator.share({ text: text.slice(0, m ? m.index : text.length).trim() + '\n', url }).catch(() => {});
   } else {
     $('shareNative').href = 'https://wa.me/?text=' + encodeURIComponent(text);   // opens WhatsApp in a new tab
   }
