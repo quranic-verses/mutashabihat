@@ -147,6 +147,7 @@ body:has(#ibar:not([hidden])) .wrap{padding-bottom:130px}
 .ix{background:transparent;border:none;color:var(--muted);font-size:1.4rem;line-height:1;padding:4px 6px}
 .over .msg:empty{display:none}
 .atitle{font-family:var(--f-display);font-size:1.25rem;margin:0 0 -8px;color:var(--accent)}
+.go-ic{width:52px;padding:0;display:flex;align-items:center;justify-content:center;flex:none}
 .sharenote{margin:0;text-align:center;font-size:.8rem;color:var(--muted)}
 .tick{color:var(--ok);font-weight:700}
 .today{margin:0;text-align:center;font-size:.95rem;color:var(--muted)} .today a{color:var(--accent);font-weight:600} .today b{color:var(--ok)}
@@ -269,7 +270,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
 
   <form id="guessForm" autocomplete="off">
     <input type="text" id="guess" placeholder="اكتب اسم السورة" aria-label="اسم السورة">
-    <button type="submit" id="go">تخمين</button>
+    <button type="submit" id="go" class="go-ic" aria-label="تحقق من الإجابة" title="تحقق من الإجابة"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
   </form>
 
   <div class="status" id="statusRow">
@@ -341,7 +342,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <p class="lead">اعرف السور التي ورد فيها الموضع المتشابه.</p>
     <ul>
       <li>كل يوم يظهر موضع متكرر من القرآن، مع عدد مرات تكراره وعدد السور التي ورد فيها.</li>
-      <li>اكتب اسم سورة واضغط «تخمين». إذا كانت صحيحة ظهرت الآية التي ورد فيها الموضع، وإذا كان الموضع فيها أكثر من مرة ظهرت آياتها كلها معًا.</li>
+      <li>اكتب اسم سورة واضغط ✓ (أو Enter). إذا كانت صحيحة ظهرت الآية التي ورد فيها الموضع، وإذا كان الموضع فيها أكثر من مرة ظهرت آياتها كلها معًا.</li>
       <li>عند كل خطأ يظهر لك في أي خمسة أجزاء تقع إحدى السور التي لم تجدها: «السورة الأولى في الأجزاء ١–٥»، ثم السورة الثانية عند الخطأ التالي، وهكذا (بترتيب المصحف).</li>
       <li>عدد المحاولات ضعف عدد السور التي ورد فيها الموضع: سورتان = ٤ محاولات، ثلاث سور = ٦ محاولات.</li>
       <li>زر «تلميح» يعطيك المعلومة نفسها (السورة التالية وأجزاءها) ويكلّفك محاولة.</li>
