@@ -357,8 +357,9 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
       <li>الكلمات التي يختلف فيها الموضعان ملوّنة، وهي مفتاح الحل.</li>
       <li>الموضع المحدَّد بإطار هو الذي تجيب عنه الآن. اضغط على الموضع الآخر للانتقال إليه.</li>
       <li>إذا كتبت سورة الموضع الآخر يُحسب خطأ، لكنها تُسجَّل له.</li>
-      <li>عند الخطأ يظهر لك في أي خمسة أجزاء تقع إحدى السورتين: «سورة (أ) في الأجزاء ١–٥»، ثم السورة الأخرى عند الخطأ التالي.</li>
+      <li>عند الخطأ يظهر لك في أي خمسة أجزاء تقع إحدى السورتين: «سورة (أ) تقع في الأجزاء ١–٥»، ثم السورة الأخرى عند الخطأ التالي.</li>
       <li>لديك ٦ محاولات. زر «تلميح» يعطيك المعلومة نفسها ويكلّفك محاولة.</li>
+      <li>في «تدرّب» على أجزاء محددة لا تظهر هذه المعلومة ولا زر «تلميح»، لأنها لا تضيف شيئًا لمن يتدرّب على تلك الأجزاء.</li>
     </ul>
     <div class="example">
       <span class="ex-label">مثال</span>
@@ -534,6 +535,7 @@ function render(){
   // after the game: no instruction line, and the verses get a «الإجابة الصحيحة» heading
   $('lead').hidden = S.done; $('ansTitle').hidden = !S.done;
   document.querySelector('.wrap').classList.toggle('over', S.done);   // lets an empty message line collapse
+  $('hintBtn').hidden = !cluesOn();
   $('hintBtn').disabled = S.done || w >= MAX_WRONG - 1 || !nextClue();
   $('reveal').hidden = !S.done;
   if (S.done) renderReveal();
@@ -545,13 +547,15 @@ const hintLabel = g => typeof g.t === 'string' ? g.t : g.k === 'b' ? 'الأجز
 // Clues: a wrong guess (or the hint button) tells which five juz one passage is in — the one being answered first,
 // then the other one. Older saved games used «third / five juz» hints, still shown by hintLabel.
 const BLOCK = b => 'الأجزاء ' + toAr(b * 5 + 1) + '–' + toAr(b * 5 + 5);
-const clueText = c => 'سورة (' + LABEL[c.p] + ') في ' + BLOCK(c.b);
+// No clues in practice on chosen juz: saying «الأجزاء ٢٦–٣٠» to someone practising juz 26–30 tells them nothing.
+const cluesOn = () => !HARD && !(S.practice && pick.mode === 'juz' && pick.juz.length);
+const clueText = c => 'سورة (' + LABEL[c.p] + ') تقع في ' + BLOCK(c.b);
 function nextClue(){
   const told = new Set(S.guesses.filter(g => g.c).map(g => g.c.p));
   for (const p of [S.active, 1 - S.active]) {
     if (S.solved[p] || told.has(p)) continue;
     const [s, a] = S.P[p];
-    return { p, b: Math.floor(((DIFF.m[s + ':' + a] || [1])[0] - 1) / 5) };
+    return Object.assign({ p }, { b: Math.floor(((DIFF.m[s + ':' + a] || [1])[0] - 1) / 5) });
   }
   return null;
 }
@@ -597,7 +601,7 @@ function guess(raw){
     S.solved[o] = true; S.guesses.push({ p, s, ok: false, swap: true });
     msg.textContent = SURAH[s] + ' هي سورة الموضع (' + LABEL[o] + ')، وليست (' + LABEL[p] + '). سُجّلت له وحُسبت خطأ.'; msg.className = 'msg bad';
   } else {
-    const g = { p, s, ok: false }; if (!HARD) { const c = nextClue(); if (c) g.c = c; }
+    const g = { p, s, ok: false }; if (cluesOn()) { const c = nextClue(); if (c) g.c = c; }
     S.guesses.push(g);
     msg.textContent = 'ليست في سورة ' + SURAH[s] + (g.c ? ' — ' + clueText(g.c) : ''); msg.className = 'msg bad';
   }

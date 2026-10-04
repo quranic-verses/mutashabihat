@@ -343,9 +343,10 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <ul>
       <li>كل يوم يظهر موضع متكرر من القرآن، مع عدد مرات تكراره وعدد السور التي ورد فيها.</li>
       <li>اكتب اسم سورة واضغط ✓ (أو Enter). إذا كانت صحيحة ظهرت الآية التي ورد فيها الموضع، وإذا كان الموضع فيها أكثر من مرة ظهرت آياتها كلها معًا.</li>
-      <li>عند كل خطأ يظهر لك في أي خمسة أجزاء تقع إحدى السور التي لم تجدها: «السورة الأولى في الأجزاء ١–٥»، ثم السورة الثانية عند الخطأ التالي، وهكذا (بترتيب المصحف).</li>
+      <li>عند كل خطأ يظهر لك في أي خمسة أجزاء تقع إحدى السور التي لم تجدها: «أول سورة تقع في الأجزاء ١–٥»، ثم «ثاني سورة…» عند الخطأ التالي، وهكذا (بترتيب المصحف).</li>
       <li>عدد المحاولات ضعف عدد السور التي ورد فيها الموضع: سورتان = ٤ محاولات، ثلاث سور = ٦ محاولات.</li>
       <li>زر «تلميح» يعطيك المعلومة نفسها (السورة التالية وأجزاءها) ويكلّفك محاولة.</li>
+      <li>في «تدرّب» على أجزاء محددة لا تظهر هذه المعلومة ولا زر «تلميح»، لأنها لا تضيف شيئًا لمن يتدرّب على تلك الأجزاء.</li>
     </ul>
     <div class="example">
       <span class="ex-label">مثال</span>
@@ -531,6 +532,7 @@ function render(){
   $('log').innerHTML = S.guesses.slice().reverse().map(g => g.h
     ? `<li class="hint"><span>تلميح</span><span>${g.c ? clueText(g.c) : hintLabel(g)}</span></li>`
     : `<li class="${g.ok ? 'ok' : 'bad'}"><span>سورة ${SURAH[g.s]}</span><span>${g.ok ? (S.per[g.s] > 1 ? 'صحيح · ' + places(S.per[g.s]) : 'صحيح') : (g.c ? clueText(g.c) : g.hint || 'خطأ')}</span></li>`).join('');
+  $('hintBtn').hidden = !cluesOn();
   $('hintBtn').disabled = S.done || wrongCount() >= S.max - 1 || !nextClue();
   $('guess').disabled = $('go').disabled = S.done;
   // once the game is over the guess box, tries and hint button are no use: hide them (the guesses list stays)
@@ -542,18 +544,19 @@ function render(){
 }
 
 // Clues: after a wrong guess (or with the hint button) the player learns which five juz the next place is in:
-// «السورة الأولى في الأجزاء ١–٥», then the second surah, and so on — the phrase's surahs in mushaf order, skipping ones already found.
-const ORD = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة', 'التاسعة', 'العاشرة'];
+// «أول سورة تقع في الأجزاء ١–٥», then «ثاني سورة…», and so on — the phrase's surahs in mushaf order, skipping ones already found.
+const ORD = ['أول', 'ثاني', 'ثالث', 'رابع', 'خامس', 'سادس', 'سابع', 'ثامن', 'تاسع', 'عاشر'];
 const BLOCK = b => 'الأجزاء ' + toAr(b * 5 + 1) + '–' + toAr(b * 5 + 5);
-const clueText = c => 'السورة ' + (ORD[S.surahs.indexOf(c.s)] || '') + ' في ' + BLOCK(c.b);
+// No clues in practice on chosen juz: saying «الأجزاء ٢٦–٣٠» to someone practising juz 26–30 tells them nothing.
+const cluesOn = () => !HARD && !(S.practice && pick.mode === 'juz' && pick.juz.length);
+const clueText = c => (ORD[S.surahs.indexOf(c.s)] || 'إحدى') + ' سورة تقع في ' + BLOCK(c.b);   // «أول سورة تقع في الأجزاء ٦–١٠»
 function nextClue(){
   const P = S.spans.slice().sort((x, y) => x[0] - y[0] || x[1] - y[1]);
   const told = new Set(S.guesses.filter(g => g.c).map(g => g.c.s));
   for (let i = 0; i < P.length; i++) {
     const s = P[i][0];
     if (S.found.includes(s) || told.has(s)) continue;
-    const juz = (DATA.m && DATA.m[s + ':' + P[i][1]] || [1])[0];
-    return { i, s, b: Math.floor((juz - 1) / 5) };
+    return Object.assign({ i, s }, { b: Math.floor(((DATA.m && DATA.m[s + ':' + P[i][1]] || [1])[0] - 1) / 5) });
   }
   return null;
 }
@@ -585,7 +588,7 @@ function guess(raw){
   if (!s) { msg.textContent = 'لم أتعرف على اسم السورة. تأكد من الاسم.'; msg.className = 'msg bad'; return; }
   if (S.guesses.some(g => g.s === s)) { msg.textContent = 'كتبت سورة ' + SURAH[s] + ' من قبل.'; msg.className = 'msg bad'; return; }
   const ok = !!S.per[s];
-  const g = { s, ok }; if (!ok && !HARD) { const c = nextClue(); if (c) g.c = c; }
+  const g = { s, ok }; if (!ok && cluesOn()) { const c = nextClue(); if (c) g.c = c; }
   S.guesses.push(g);
   if (ok) { S.found.push(s); msg.textContent = 'صحيح: ' + SURAH[s]; msg.className = 'msg ok'; }
   else { msg.textContent = 'ليست في سورة ' + SURAH[s] + (g.c ? ' — ' + clueText(g.c) : ''); msg.className = 'msg bad'; }
