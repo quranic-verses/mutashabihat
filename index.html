@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="ثلاثة اختبارات يومية في متشابهات القرآن الكريم: أين ورد؟ وميّز بينهما ولم تتكرر. وتدرّب على الأجزاء التي تحفظها.">
+<meta name="description" content="اختباران يوميان في متشابهات القرآن الكريم: أين ورد؟ وميّز بينهما. وتدرّب على الأجزاء التي تحفظها.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://quranic-verses.github.io/mutashabihat/">
 <meta property="og:title" content="متشابهات القرآن الكريم">
-<meta property="og:description" content="ثلاثة اختبارات يومية لحفّاظ القرآن: أين ورد؟ · ميّز بينهما · لم تتكرر">
+<meta property="og:description" content="اختباران يوميان لحفّاظ القرآن: أين ورد؟ · ميّز بينهما">
 <meta property="og:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=4">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -63,9 +63,13 @@ h1{font-family:var(--f-display);font-weight:700;font-size:2.1rem;line-height:1.4
 .facts{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .chip{border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.92rem;color:var(--muted)}
 .chip b{color:var(--ink);font-variant-numeric:tabular-nums}
+.slots:empty{display:none}
 .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
 .slots .ayah{grid-column:1/-1}
 .ayah.found{border-color:var(--ok)}
+.slot.empty{flex-direction:column;gap:0;line-height:1.35;color:var(--muted);font-weight:600;font-size:.9rem}
+.slot.empty small{font-weight:400;font-size:.78rem;opacity:.85}
+.slot.clued{border-color:var(--gold);color:var(--gold)}
 .slot{min-height:52px;border-radius:10px;background:var(--empty);border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;padding:6px}
 .slot.found{background:var(--ok-bg);border:1px solid var(--ok);color:var(--ok);animation:pop .35s ease}
 .slot.missed{background:transparent;border:1px solid var(--bad);color:var(--bad)}
@@ -245,7 +249,6 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   <nav class="games" aria-label="نوع السؤال">
     <a class="gbtn" id="gameSurah" href="./">أين ورد؟</a>
     <a class="gbtn" id="gameFarq" href="farq.html">ميّز بينهما</a>
-    <a class="gbtn" id="gameKal" href="kalima.html">لم تتكرر</a>
   </nav>
 
   <div class="pbar" id="pbar" hidden>
@@ -270,10 +273,10 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   </form>
 
   <div class="status" id="statusRow">
-    <span>محاولات خاطئة متبقية</span>
+    <span>محاولات متبقية</span>
     <div class="lives" id="lives"></div>
     <span class="hardtag" id="hardTag" hidden>الوضع الصعب</span>
-    <button type="button" class="ghost sm" id="hintBtn" title="الأول: في أي ثلث من القرآن إحدى السور المتبقية · الثاني: في أي خمسة أجزاء">تلميح <small>(يكلّف محاولة)</small></button>
+    <button type="button" class="ghost sm" id="hintBtn" title="يكشف في أي خمسة أجزاء السورة التالية">تلميح <small>(يكلّف محاولة)</small></button>
   </div>
   <div class="msg" id="msg" role="status"></div>
 
@@ -338,10 +341,10 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <p class="lead">اعرف السور التي ورد فيها الموضع المتشابه.</p>
     <ul>
       <li>كل يوم يظهر موضع متكرر من القرآن، مع عدد مرات تكراره وعدد السور التي ورد فيها.</li>
-      <li>اكتب اسم سورة واضغط «تخمين». إذا كان الموضع فيها أكثر من مرة تمتلئ خاناتها كلها معًا.</li>
-      <li>عند الخطأ يظهر لك هل أقرب سورة صحيحة لم تجدها بعد تأتي <b>قبل</b> السورة التي كتبتها أو <b>بعدها</b> في ترتيب المصحف.</li>
-      <li>لديك ٦ أخطاء فقط.</li>
-      <li>زر «تلميح» يكلّفك محاولة، ولك تلميحان: الأول يكشف في أي ثلث من القرآن توجد إحدى السور المتبقية، والثاني في أي خمسة أجزاء (١–٥، ٦–١٠ … ٢٦–٣٠).</li>
+      <li>اكتب اسم سورة واضغط «تخمين». إذا كانت صحيحة ظهرت الآية التي ورد فيها الموضع، وإذا كان الموضع فيها أكثر من مرة ظهرت آياتها كلها معًا.</li>
+      <li>عند كل خطأ يظهر لك في أي خمسة أجزاء تقع إحدى السور التي لم تجدها: «السورة الأولى في الأجزاء ١–٥»، ثم السورة الثانية عند الخطأ التالي، وهكذا (بترتيب المصحف).</li>
+      <li>عدد المحاولات ضعف عدد السور التي ورد فيها الموضع: سورتان = ٤ محاولات، ثلاث سور = ٦ محاولات.</li>
+      <li>زر «تلميح» يعطيك المعلومة نفسها (السورة التالية وأجزاءها) ويكلّفك محاولة.</li>
     </ul>
     <div class="example">
       <span class="ex-label">مثال</span>
@@ -352,7 +355,6 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <p class="small">يتغير الاختبار كل يوم عند منتصف الليل بتوقيت القاهرة. النص من مصحف المدينة (رواية حفص)، والمواضع مستخرجة من العبارات المتكررة حرفيًا.</p>
     <p class="small" id="installNote">لتثبيت التطبيق على شاشة هاتفك: من قائمة المتصفح اختر «إضافة إلى الشاشة الرئيسية» (في الآيفون: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»).</p>
     <button type="button" class="ghost" id="installBtn" hidden>تثبيت التطبيق على الهاتف</button>
-    <label class="hardopt"><input type="checkbox" id="hardMode"> <span><b>الوضع الصعب</b>: بدون زر التلميح، وبدون إشارة «قبلها/بعدها» عند الخطأ. يسري على الاختبارين.</span></label>
     <button type="button" id="helpGo" class="start">ابدأ الاختبار</button>
   </div>
 </div>
@@ -361,13 +363,12 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   <div class="panel" dir="rtl" lang="ar">
     <button type="button" class="x" id="welcomeX" aria-label="إغلاق">×</button>
     <h2 id="welcomeTitle">متشابهات القرآن الكريم</h2>
-    <p class="lead">ثلاثة اختبارات قصيرة كل يوم لمن يحفظ القرآن:</p>
+    <p class="lead">اختباران قصيران كل يوم لمن يحفظ القرآن:</p>
     <ul>
       <li><b>أين ورد؟</b> عبارة تتكرر في القرآن، فاكتب السور التي وردت فيها.</li>
       <li><b>ميّز بينهما</b> موضعان متشابهان، فاعرف سورة كل منهما.</li>
-      <li><b>لم تتكرر</b> ثلاث كلمات، واحدة منها فقط وردت في القرآن مرة واحدة، فاخترها.</li>
     </ul>
-    <p class="small">في «أين ورد؟» و«ميّز بينهما» ٦ محاولات وتلميحان، وفي «لم تتكرر» اختيار واحد لكل جولة. اختبار جديد كل يوم عند منتصف الليل بتوقيت القاهرة، و«تدرّب» على الأجزاء التي تحفظها متى شئت. زر «؟» يشرح كل اختبار بالتفصيل.</p>
+    <p class="small">في «أين ورد؟» عدد المحاولات ضعف عدد السور، وفي «ميّز بينهما» ٦ محاولات. عند كل خطأ يظهر لك في أي خمسة أجزاء إحدى السور (مثل الأجزاء ١–٥)، وزر «تلميح» يعطيك المعلومة نفسها مقابل محاولة. اختبار جديد كل يوم عند منتصف الليل بتوقيت القاهرة، و«تدرّب» على الأجزاء التي تحفظها متى شئت. زر «؟» يشرح كل اختبار بالتفصيل.</p>
     <button type="button" id="welcomeGo" class="start">ابدأ</button>
   </div>
 </div>
@@ -418,7 +419,7 @@ const DATA={"s":[[1,"الفاتحة"],[2,"البقرة"],[3,"آل عمران"],[
 <script>
 (function(){
 if (typeof DATA === 'undefined') { document.getElementById('msg').textContent = 'تعذر تحميل البيانات. أعد تحميل الصفحة.'; return; }
-const MAX_WRONG = 6;
+const triesFor = n => 2 * n;   // tries = twice the number of surahs the phrase is in
 const GAME = 'surah';
 const WANT_TRAIN = location.hash === '#train';   // read before anything rewrites the address
 const SITE_URL = 'https://quranic-verses.github.io/mutashabihat/';
@@ -485,6 +486,7 @@ function load(idx, practice, archive){
   const saved = !practice && store.get(key, null);
   S = { idx, practice, archive: !!archive, key, id, text, spans, per, surahs: Object.keys(per).map(Number).sort((a,b)=>a-b),
         found: saved ? saved.found : [], guesses: saved ? saved.guesses : [], done: saved ? saved.done : false };
+  S.max = triesFor(S.surahs.length);
   $('pnum').textContent = practice ? 'تدريب' : 'الاختبار ' + toAr(idx + 1) + (archive ? ' (من الأرشيف)' : '');
   $('pdate').innerHTML = archive ? bothDates(new Date(START + idx * 86400000), 'UTC') : bothDates(new Date(), 'Africa/Cairo');
   $('archBtn').hidden = practice;
@@ -520,17 +522,15 @@ function render(){
     S.spans.forEach(sp => out.push(verseCard(sp, !S.found.includes(sp[0]), false)));
   } else {
     S.found.forEach(s => S.spans.filter(sp => sp[0] === s).forEach(sp => out.push(verseCard(sp, false, s === newest))));
-    S.surahs.filter(s => !S.found.includes(s)).forEach(s => {
-      for (let i = 0; i < S.per[s]; i++) out.push('<div class="slot" aria-label="خانة فارغة"></div>');
-    });
+    // surahs not found yet get no empty boxes: the guesses list and the clues already say what is missing
   }
   $('slots').innerHTML = out.join('');
   const w = wrongCount();
-  $('lives').innerHTML = Array.from({length: MAX_WRONG}, (_, i) => `<i class="${i < w ? 'used' : ''}"></i>`).join('');
+  $('lives').innerHTML = Array.from({length: S.max}, (_, i) => `<i class="${i < w ? 'used' : ''}"></i>`).join('');
   $('log').innerHTML = S.guesses.slice().reverse().map(g => g.h
-    ? `<li class="hint"><span>تلميح</span><span>${hintLabel(g)}</span></li>`
-    : `<li class="${g.ok ? 'ok' : 'bad'}"><span>${SURAH[g.s]}</span><span>${g.ok ? (S.per[g.s] > 1 ? 'صحيح · ' + places(S.per[g.s]) : 'صحيح') : (g.hint || 'خطأ')}</span></li>`).join('');
-  $('hintBtn').disabled = S.done || wrongCount() >= MAX_WRONG - 1 || !hintable().length;
+    ? `<li class="hint"><span>تلميح</span><span>${g.c ? clueText(g.c) : hintLabel(g)}</span></li>`
+    : `<li class="${g.ok ? 'ok' : 'bad'}"><span>سورة ${SURAH[g.s]}</span><span>${g.ok ? (S.per[g.s] > 1 ? 'صحيح · ' + places(S.per[g.s]) : 'صحيح') : (g.c ? clueText(g.c) : g.hint || 'خطأ')}</span></li>`).join('');
+  $('hintBtn').disabled = S.done || wrongCount() >= S.max - 1 || !nextClue();
   $('guess').disabled = $('go').disabled = S.done;
   // once the game is over the guess box, tries and hint button are no use: hide them (the guesses list stays)
   $('guessForm').hidden = $('statusRow').hidden = S.done;
@@ -540,20 +540,27 @@ function render(){
   if (S.done) renderReveal();
 }
 
-function hintFor(s){
-  const left = S.surahs.filter(x => !S.found.includes(x));
-  let best = left[0];
-  left.forEach(x => { if (Math.abs(x - s) < Math.abs(best - s)) best = x; });
-  return best > s ? 'الأقرب بعدها' : 'الأقرب قبلها';
+// Clues: after a wrong guess (or with the hint button) the player learns which five juz the next place is in:
+// «السورة الأولى في الأجزاء ١–٥», then the second surah, and so on — the phrase's surahs in mushaf order, skipping ones already found.
+const ORD = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة', 'التاسعة', 'العاشرة'];
+const BLOCK = b => 'الأجزاء ' + toAr(b * 5 + 1) + '–' + toAr(b * 5 + 5);
+const clueText = c => 'السورة ' + (ORD[S.surahs.indexOf(c.s)] || '') + ' في ' + BLOCK(c.b);
+function nextClue(){
+  const P = S.spans.slice().sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  const told = new Set(S.guesses.filter(g => g.c).map(g => g.c.s));
+  for (let i = 0; i < P.length; i++) {
+    const s = P[i][0];
+    if (S.found.includes(s) || told.has(s)) continue;
+    const juz = (DATA.m && DATA.m[s + ':' + P[i][1]] || [1])[0];
+    return { i, s, b: Math.floor((juz - 1) / 5) };
+  }
+  return null;
 }
 
-// Hint: costs one wrong guess, tells which third of the Quran one remaining surah is in.
 const THIRDS = ['الثلث الأول (الأجزاء ١–١٠)', 'الثلث الثاني (الأجزاء ١١–٢٠)', 'الثلث الأخير (الأجزاء ٢١–٣٠)'];
-// Two hints at most, each costs a try: the first shows which third of the Quran, the second which five juz (١–٥ … ٢٦–٣٠).
+// Older saved games used «third of the Quran / five juz» hints; these still display them.
 const hintLabel = g => typeof g.t === 'string' ? g.t : g.k === 'b' ? 'الأجزاء ' + toAr(g.t * 5 + 1) + '–' + toAr(g.t * 5 + 5) : THIRDS[g.t];
 const hintOf = (juz, second) => second ? { k: 'b', t: Math.floor((juz - 1) / 5) } : { k: 't', t: Math.min(2, Math.floor((juz - 1) / 10)) };
-function hintsUsed(){ return S.guesses.filter(g => g.h); }
-function hintable(){ return hintsUsed().length < 2 ? S.surahs.filter(s => !S.found.includes(s)) : []; }
 // ---------- «أخطائي»: questions finished with a mistake or a hint, kept until solved cleanly ----------
 const MISS_KEY = 'mut-miss';
 function noteMistake(id, clean){
@@ -562,15 +569,10 @@ function noteMistake(id, clean){
   store.set(MISS_KEY, m.slice(-500));
 }
 function useHint(){
-  if (S.done || wrongCount() >= MAX_WRONG - 1) return;
-  const left = hintable(); if (!left.length) return;
-  const prev = hintsUsed()[0];                       // the second hint narrows down the same surah while it is still missing
-  const s = prev && left.includes(prev.h) ? prev.h : left[Math.floor(Math.random() * left.length)];
-  const sp = S.spans.find(x => x[0] === s);
-  const juz = (DATA.m && DATA.m[sp[0] + ':' + sp[1]] || [1])[0];
-  const g = Object.assign({ h: s, ok: false }, hintOf(juz, !!prev));
-  S.guesses.push(g);
-  $('msg').textContent = 'تلميح: إحدى السور المتبقية في ' + hintLabel(g); $('msg').className = 'msg hintmsg';
+  if (S.done || wrongCount() >= S.max - 1) return;
+  const c = nextClue(); if (!c) return;
+  S.guesses.push({ h: 1, c, ok: false });
+  $('msg').textContent = 'تلميح: ' + clueText(c); $('msg').className = 'msg hintmsg';
   if (!S.practice) store.set(S.key, { found: S.found, guesses: S.guesses, done: S.done });
   render();
 }
@@ -582,11 +584,11 @@ function guess(raw){
   if (!s) { msg.textContent = 'لم أتعرف على اسم السورة. تأكد من الاسم.'; msg.className = 'msg bad'; return; }
   if (S.guesses.some(g => g.s === s)) { msg.textContent = 'كتبت سورة ' + SURAH[s] + ' من قبل.'; msg.className = 'msg bad'; return; }
   const ok = !!S.per[s];
-  const g = { s, ok }; if (!ok && !HARD) g.hint = hintFor(s);
+  const g = { s, ok }; if (!ok && !HARD) { const c = nextClue(); if (c) g.c = c; }
   S.guesses.push(g);
   if (ok) { S.found.push(s); msg.textContent = 'صحيح: ' + SURAH[s]; msg.className = 'msg ok'; }
-  else { msg.textContent = 'ليست في ' + SURAH[s] + (g.hint ? ' · ' + g.hint : ''); msg.className = 'msg bad'; }
-  const won = S.found.length === S.surahs.length, lost = wrongCount() >= MAX_WRONG;
+  else { msg.textContent = 'ليست في سورة ' + SURAH[s] + (g.c ? ' — ' + clueText(g.c) : ''); msg.className = 'msg bad'; }
+  const won = S.found.length === S.surahs.length, lost = wrongCount() >= S.max;
   if (won || lost) {
     S.done = true; S.won = won;
     msg.textContent = ''; msg.className = 'msg';
@@ -760,10 +762,9 @@ function setNav(practice){
   const tag = practice ? '#train' : '';
   $('gameSurah').href = home + tag;
   $('gameFarq').href = 'farq.html' + tag;
-  $('gameKal').href = 'kalima.html' + tag;
-  $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq'); $('gameKal').classList.toggle('on', GAME === 'kal');
+  $('gameSurah').classList.toggle('on', GAME === 'surah'); $('gameFarq').classList.toggle('on', GAME === 'farq');
 }
-[['gameSurah', 'surah'], ['gameFarq', 'farq'], ['gameKal', 'kal']].forEach(([id, g]) => $(id).addEventListener('click', e => {
+[['gameSurah', 'surah'], ['gameFarq', 'farq']].forEach(([id, g]) => $(id).addEventListener('click', e => {
   if (g === GAME) e.preventDefault();   // already on this game
 }));
 $('modeDaily').addEventListener('click', () => { if (S && (S.practice || S.archive)) load(todayIndex(), false); });
@@ -811,13 +812,12 @@ function saveSummary(n, total, grid){
   store.set('sum-surah-' + cairoDateKey(), { num: S.idx + 1, n, total, grid, hard: HARD });
 }
 function dailyShareText(){
-  const k = cairoDateKey(), a = store.get('sum-surah-' + k, null), b = store.get('sum-farq-' + k, null), c = store.get('sum-kal-' + k, null);
+  const k = cairoDateKey(), a = store.get('sum-surah-' + k, null), b = store.get('sum-farq-' + k, null);
   const lines = ['متشابهات القرآن الكريم — ' + new Date().toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric', timeZone:'Africa/Cairo'})];
   // words instead of "٢: ٠/٢" and "·", which WhatsApp shows jumbled or as an Arabic zero
   if (a) lines.push('', `أين ورد؟${a.hard ? ' (صعب)' : ''}`, `${toAr(a.n)} من ${toAr(a.total)} ${a.grid}`);
   if (b) lines.push('', `ميّز بينهما${b.hard ? ' (صعب)' : ''}`, `${toAr(b.n)} من ${toAr(b.total)} ${b.grid}`);
-  if (c) lines.push('', 'لم تتكرر', `${toAr(c.n)} من ${toAr(c.total)} ${c.grid}`);
-  if (a && b && c) lines.push('', '✅ أتممت اختبارات اليوم الثلاثة');
+  if (a && b) lines.push('', '✅ أتممت اختباري اليوم');
   lines.push('');
   lines.push(SITE_URL);
   return lines.join('\n');
@@ -894,13 +894,14 @@ function renderDist(){
 }
 
 // ---------- Hard mode: no hint button, no before/after hint (shared by both games) ----------
-let HARD = !!store.get('mut-hard', false);
+// Hard mode is archived for now: always off (the saved choice 'mut-hard' is ignored). Bring back the checkbox to restore it.
+let HARD = false;
 function applyHard(){
-  $('hardMode').checked = HARD;
+  if ($('hardMode')) $('hardMode').checked = HARD;
   $('hintBtn').hidden = HARD;
   $('hardTag').hidden = !HARD;
 }
-$('hardMode').addEventListener('change', e => { HARD = e.target.checked; store.set('mut-hard', HARD); applyHard(); render(); });
+if ($('hardMode')) $('hardMode').addEventListener('change', e => { HARD = e.target.checked; store.set('mut-hard', HARD); applyHard(); render(); });
 applyHard();
 
 // ---------- Sound effects: soft tones made by the browser (no sound files); on/off remembered ----------
@@ -951,7 +952,7 @@ $('help').addEventListener('click', e => { if (e.target === $('help')) hideHelp(
 document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('arch').hidden) hideArch(); else if (!$('pick').hidden) hidePick(); else if (!$('help').hidden) hideHelp(); });
 
 // ---------- Today's three quizzes: ✓ on the tabs, what is left after finishing, one welcome screen ----------
-const GAMES = [['surah', 'gameSurah', 'أين ورد؟'], ['farq', 'gameFarq', 'ميّز بينهما'], ['kal', 'gameKal', 'لم تتكرر']];
+const GAMES = [['surah', 'gameSurah', 'أين ورد؟'], ['farq', 'gameFarq', 'ميّز بينهما']];
 const doneToday = g => !!store.get('sum-' + g + '-' + cairoDateKey(), null);
 function markTabs(){
   GAMES.forEach(([g, id, name]) => {
@@ -965,7 +966,7 @@ function renderToday(){
   const left = GAMES.filter(([g]) => !doneToday(g));
   box.innerHTML = left.length
     ? 'بقي لك اليوم: ' + left.map(([g, id, name]) => `<a href="${$(id).getAttribute('href')}">${name}</a>`).join('، ')
-    : '<b>✓ أتممت اختبارات اليوم الثلاثة</b>';
+    : '<b>✓ أتممت اختباري اليوم</b>';
   box.hidden = false;
   markTabs();
 }
