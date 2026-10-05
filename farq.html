@@ -294,7 +294,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   </form>
 
   <div class="status" id="statusRow">
-    <span>محاولات متبقية</span>
+    <span>محاولات متبقية: <b id="left"></b></span>
     <div class="lives" id="lives"></div>
     <span class="hardtag" id="hardTag" hidden>الوضع الصعب</span>
     <button type="button" class="ghost sm" id="hintBtn">تلميح <small>(يكلّف محاولة)</small></button>
@@ -361,7 +361,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
       <li>الكلمات التي يختلف فيها الموضعان ملوّنة، وهي مفتاح الحل.</li>
       <li>الموضع المحدَّد بإطار هو الذي تجيب عنه الآن. اضغط على الموضع الآخر للانتقال إليه.</li>
       <li>إذا كتبت سورة الموضع الآخر يُحسب خطأ، لكنها تُسجَّل له.</li>
-      <li>عند الخطأ يظهر لك في أي خمسة أجزاء تقع إحدى السورتين: «سورة (أ) تقع في الأجزاء ١–٥»، ثم السورة الأخرى عند الخطأ التالي.</li>
+      <li>عند الخطأ يظهر لك في أي خمسة أجزاء تقع إحدى السورتين: «سورة الموضع (أ) تبدأ في الأجزاء ١–٥»، ثم السورة الأخرى عند الخطأ التالي.</li>
       <li>لديك ٦ محاولات. زر «تلميح» يُظهر لك في أي الأجزاء تقع سورة الموضع، مع نص الآية كاملًا، ويكلّفك محاولة. الرقم بجانبه هو عدد التلميحات المتبقية لك.</li>
       <li>في «تدرّب» على أجزاء محددة لا تظهر الأجزاء، لأنها لا تضيف شيئًا لمن يتدرّب عليها: الخطأ لا يعطيك معلومة، وزر «تلميح» يُظهر لك نص الآية كاملًا فقط.</li>
     </ul>
@@ -525,10 +525,12 @@ function render(){
   }).join('');
   const w = wrongCount();
   $('lives').innerHTML = Array.from({length: MAX_WRONG}, (_, i) => `<i class="${i < w ? 'used' : ''}"></i>`).join('');
+  $('left').textContent = toAr(Math.max(0, MAX_WRONG - wrongCount()));
   $('guess').placeholder = 'سورة الموضع (' + LABEL[S.active] + ')';
-  $('log').innerHTML = S.guesses.slice().reverse().map(g => {
+  // correct answers already show as verse cards, so the list keeps only wrong guesses and hints
+  $('log').innerHTML = S.guesses.filter(g => !g.ok).reverse().map(g => {
     const tag = '(' + LABEL[g.p] + ') ';
-    if (g.h) return `<li class="hint"><span>${tag}تلميح</span><span>${g.c ? clueText(g.c) : hintLabel(g)}</span>${g.c && g.c.v ? hintVerse(g.c.p) : ''}</li>`;
+    if (g.h) return `<li class="hint"><span>تلميح الموضع (${LABEL[g.p]})</span><span>${g.c ? clueText(g.c) : hintLabel(g)}</span>${g.c && g.c.v ? hintVerse(g.c.p) : ''}</li>`;
     if (g.ok) return `<li class="ok"><span>${tag}سورة ${SURAH[g.s]}</span><span>صحيح</span></li>`;
     if (g.swap) return `<li class="bad"><span>${tag}سورة ${SURAH[g.s]}</span><span>سورة الموضع الآخر</span></li>`;
     return `<li class="bad"><span>${tag}سورة ${SURAH[g.s]}</span><span>${g.c ? clueText(g.c) : g.dir || 'خطأ'}</span></li>`;
@@ -553,10 +555,14 @@ const hintLabel = g => typeof g.t === 'string' ? g.t : g.k === 'b' ? 'الأجز
 // Clues: a wrong guess (or the hint button) tells which five juz one passage is in — the one being answered first,
 // then the other one. Older saved games used «third / five juz» hints, still shown by hintLabel.
 const BLOCK = b => 'الأجزاء ' + toAr(b * 5 + 1) + '–' + toAr(b * 5 + 5);
+// juz each surah starts in: clues name the five-juz block where the surah begins, so a surah that runs into the next block
+// (النساء، التوبة، الكهف، العنكبوت) always gets one block, the one a hafiz thinks of it in
+const SURAH_JUZ = [1,1,3,4,6,7,8,9,10,11,11,12,13,13,14,14,15,15,16,16,17,17,18,18,18,19,19,20,20,21,21,21,21,22,22,22,23,23,23,24,24,25,25,25,25,26,26,26,26,26,26,27,27,27,27,27,27,28,28,28,28,28,28,28,28,28,29,29,29,29,29,29,29,29,29,29,29,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30];
+const startBlock = s => Math.floor((SURAH_JUZ[s - 1] - 1) / 5);
 // No clues in practice on chosen juz: saying «الأجزاء ٢٦–٣٠» to someone practising juz 26–30 tells them nothing.
 const cluesOn = () => !HARD && !(S.practice && pick.mode === 'juz' && pick.juz.length);
 const clueText = c => c.nb ? 'آية الموضع (' + LABEL[c.p] + ')'   // practice on chosen juz: verse only
-  : 'سورة (' + LABEL[c.p] + ') تقع في ' + BLOCK(c.b);
+  : 'سورة الموضع (' + LABEL[c.p] + ') تبدأ في ' + BLOCK(c.b);
 // verse = true is the «تلميح» button: juz plus the whole verse, so it may pick a passage whose juz a wrong guess already told.
 function clueTargets(verse){
   const told = new Set(S.guesses.filter(g => g.c && (!verse || g.c.v)).map(g => g.c.p));
@@ -565,7 +571,7 @@ function clueTargets(verse){
 function nextClue(verse){
   const p = clueTargets(verse)[0]; if (p === undefined) return null;
   const [s, a] = S.P[p];
-  const c = { p, b: Math.floor(((DIFF.m[s + ':' + a] || [1])[0] - 1) / 5) };
+  const c = { p, b: startBlock(s) };
   if (verse) c.v = 1;
   return c;
 }

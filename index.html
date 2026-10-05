@@ -278,7 +278,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   </form>
 
   <div class="status" id="statusRow">
-    <span>محاولات متبقية</span>
+    <span>محاولات متبقية: <b id="left"></b></span>
     <div class="lives" id="lives"></div>
     <span class="hardtag" id="hardTag" hidden>الوضع الصعب</span>
     <button type="button" class="ghost sm" id="hintBtn">تلميح <small>(يكلّف محاولة)</small></button>
@@ -347,7 +347,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <ul>
       <li>كل يوم يظهر موضع متكرر من القرآن، مع عدد مرات تكراره وعدد السور التي ورد فيها.</li>
       <li>اكتب اسم سورة واضغط ✓ (أو Enter). إذا كانت صحيحة ظهرت الآية التي ورد فيها الموضع، وإذا كان الموضع فيها أكثر من مرة ظهرت آياتها كلها معًا.</li>
-      <li>عند كل خطأ يظهر لك في أي خمسة أجزاء تقع إحدى السور التي لم تجدها: «أول سورة تقع في الأجزاء ١–٥»، ثم «ثاني سورة…» عند الخطأ التالي، وهكذا (بترتيب المصحف).</li>
+      <li>عند كل خطأ يظهر لك في أي خمسة أجزاء تبدأ إحدى السور التي لم تجدها: «أول سورة ورد فيها تبدأ في الأجزاء ١–٥»، ثم «ثاني سورة ورد فيها…» عند الخطأ التالي، وهكذا (بترتيب المصحف).</li>
       <li>عدد المحاولات ضعف عدد السور التي ورد فيها الموضع: سورتان = ٤ محاولات، ثلاث سور = ٦ محاولات.</li>
       <li>زر «تلميح» يُظهر لك في أي الأجزاء تقع إحدى السور التي لم تجدها بعد، مع نص الآية كاملًا، ويكلّفك محاولة. الرقم بجانبه هو عدد التلميحات المتبقية لك.</li>
       <li>في «تدرّب» على أجزاء محددة لا تظهر الأجزاء، لأنها لا تضيف شيئًا لمن يتدرّب عليها: الخطأ لا يعطيك معلومة، وزر «تلميح» يُظهر لك نص الآية كاملًا فقط.</li>
@@ -533,7 +533,9 @@ function render(){
   $('slots').innerHTML = out.join('');
   const w = wrongCount();
   $('lives').innerHTML = Array.from({length: S.max}, (_, i) => `<i class="${i < w ? 'used' : ''}"></i>`).join('');
-  $('log').innerHTML = S.guesses.slice().reverse().map(g => g.h
+  $('left').textContent = toAr(Math.max(0, S.max - wrongCount()));
+  // correct answers already show as verse cards, so the list keeps only wrong guesses and hints
+  $('log').innerHTML = S.guesses.filter(g => !g.ok).reverse().map(g => g.h
     ? `<li class="hint"><span>تلميح</span><span>${g.c ? clueText(g.c) : hintLabel(g)}</span>${g.c && g.c.v ? hintVerse(g.c) : ''}</li>`
     : `<li class="${g.ok ? 'ok' : 'bad'}"><span>سورة ${SURAH[g.s]}</span><span>${g.ok ? (S.per[g.s] > 1 ? 'صحيح · ' + places(S.per[g.s]) : 'صحيح') : (g.c ? clueText(g.c) : g.hint || 'خطأ')}</span></li>`).join('');
   $('hintBtn').hidden = !hintOn();
@@ -553,10 +555,18 @@ function render(){
 // «أول سورة تقع في الأجزاء ١–٥», then «ثاني سورة…», and so on — the phrase's surahs in mushaf order, skipping ones already found.
 const ORD = ['أول', 'ثاني', 'ثالث', 'رابع', 'خامس', 'سادس', 'سابع', 'ثامن', 'تاسع', 'عاشر'];
 const BLOCK = b => 'الأجزاء ' + toAr(b * 5 + 1) + '–' + toAr(b * 5 + 5);
+// juz each surah starts in: clues name the five-juz block where the surah begins, so a surah that runs into the next block
+// (النساء، التوبة، الكهف، العنكبوت) always gets one block, the one a hafiz thinks of it in
+const SURAH_JUZ = [1,1,3,4,6,7,8,9,10,11,11,12,13,13,14,14,15,15,16,16,17,17,18,18,18,19,19,20,20,21,21,21,21,22,22,22,23,23,23,24,24,25,25,25,25,26,26,26,26,26,26,27,27,27,27,27,27,28,28,28,28,28,28,28,28,28,29,29,29,29,29,29,29,29,29,29,29,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30];
+const startBlock = s => Math.floor((SURAH_JUZ[s - 1] - 1) / 5);
 // No clues in practice on chosen juz: saying «الأجزاء ٢٦–٣٠» to someone practising juz 26–30 tells them nothing.
 const cluesOn = () => !HARD && !(S.practice && pick.mode === 'juz' && pick.juz.length);
-const clueText = c => c.nb ? 'آية من ' + (ORD[S.surahs.indexOf(c.s)] || 'إحدى') + ' سورة وردت فيها'   // practice on chosen juz: verse only
-  : (ORD[S.surahs.indexOf(c.s)] || 'إحدى') + ' سورة تقع في ' + BLOCK(c.b);   // «أول سورة تقع في الأجزاء ٦–١٠»
+// a hint also says how often the phrase occurs in that surah when it is more than once (the verse shown is the first)
+const timesIn = c => { const n = c.v ? S.spans.filter(x => x[0] === c.s).length : 1; return n < 2 ? '' : ' (ورد فيها ' + (n === 2 ? 'مرتين' : toAr(n) + ' مرات') + ')'; };
+// wrong guess: «أول سورة ورد فيها تبدأ في الأجزاء ٦–١٠»; hint (c.v): «تبدأ السورة في الأجزاء ٦–١٠» + the verse
+const clueText = c => (c.nb ? 'آية من إحدى السور'   // practice on chosen juz: verse only
+  : c.v ? 'تبدأ السورة في ' + BLOCK(c.b)
+  : (ORD[S.surahs.indexOf(c.s)] || 'إحدى') + ' سورة ورد فيها تبدأ في ' + BLOCK(c.b)) + timesIn(c);   // «أول سورة ورد فيها الموضع تقع في الأجزاء ٦–١٠»
 // verse = true is the «تلميح» button: it also gives the whole verse, so it may pick a surah whose juz a wrong guess
 // already told (but not one that already had its verse shown).
 function clueTargets(verse){
@@ -567,7 +577,7 @@ function clueTargets(verse){
     const s = P[i][0];
     if (S.found.includes(s) || told.has(s) || seen.has(s)) continue;
     seen.add(s);
-    out.push({ i, s, b: Math.floor(((DATA.m && DATA.m[s + ':' + P[i][1]] || [1])[0] - 1) / 5), sp: P[i] });
+    out.push({ i, s, b: startBlock(s), sp: P[i] });
   }
   return out;
 }
