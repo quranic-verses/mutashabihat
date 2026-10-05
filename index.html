@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="اختباران يوميان في متشابهات القرآن الكريم: أين ورد؟ وميّز بينهما. وتدرّب على الأجزاء التي تحفظها.">
+<meta name="description" content="اختبارات يومية في متشابهات القرآن الكريم: أين ورد؟ وميّز بينهما. وتدرّب على الأجزاء التي تحفظها.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://quranic-verses.github.io/mutashabihat/">
 <meta property="og:title" content="متشابهات القرآن الكريم">
-<meta property="og:description" content="اختباران يوميان لحفّاظ القرآن: أين ورد؟ · ميّز بينهما">
+<meta property="og:description" content="اختبارات يومية لحفّاظ القرآن: أين ورد؟ · ميّز بينهما">
 <meta property="og:image" content="https://quranic-verses.github.io/mutashabihat/og-image.png?v=4">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,6 +28,7 @@ try { var t = JSON.parse(localStorage.getItem('mut-theme')); if (t === 'dark' ||
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Changa:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&text=%D9%A0%D9%A1%D9%A2%D9%A3%D9%A4%D9%A5%D9%A6%D9%A7%D9%A8%D9%A9&display=swap">
 <style>
 /* Layout: one narrow centred column — verse card, answer slots, guess box, guess log */
 :root{
@@ -36,7 +37,7 @@ try { var t = JSON.parse(localStorage.getItem('mut-theme')); if (t === 'dark' ||
   --scrim:rgba(14,22,20,.55); --hint-bg:#F5ECD6; --ok:#1F8A5B; --ok-bg:#DDF1E6; --bad:#B23A3A; --bad-bg:#F6E0DE; --empty:#E3EAE6;
   --f-display:"Changa","IBM Plex Sans Arabic",sans-serif;
   --f-quran:"Amiri Quran","Amiri","Traditional Arabic",serif;
-  --f-ui:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --f-ui:"Tajawal","IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1614; --surface:#15201D; --ink:#E5EEEA; --muted:#93A6A0; --line:#2A3934;
@@ -48,7 +49,8 @@ try { var t = JSON.parse(localStorage.getItem('mut-theme')); if (t === 'dark' ||
   --scrim:rgba(0,0,0,.65); --hint-bg:#33291A; --ok:#4CC58C; --ok-bg:#163428; --bad:#E57373; --bad-bg:#3A1F1F; --empty:#1C2925; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.6}
+html{font-size:17px}   /* a little larger than the 16px default; every rem size scales with it */
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:1rem;line-height:1.6}
 .wrap{max-width:620px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
 h1{font-family:var(--f-display);font-weight:700;font-size:2.1rem;line-height:1.4;margin:0;color:var(--accent);text-wrap:balance}
@@ -91,11 +93,13 @@ button:disabled{opacity:.5;cursor:default}
 .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
 .log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .log li{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:10px;font-weight:500}
-.log li.hint{background:var(--hint-bg);color:var(--gold)}
+.log li.hint{background:var(--hint-bg);color:var(--gold);flex-wrap:wrap}
+.log .hverse{flex-basis:100%;text-align:right;text-align-last:auto;margin:2px 0 0;font-family:var(--f-quran);font-size:1.15rem;line-height:2.2;color:var(--ink);font-weight:400}
+.log .hverse mark{background:transparent;color:var(--accent);font-weight:700;border-bottom:2px solid var(--gold)}
 .msg.hintmsg{color:var(--gold)}
 .status button small{font-weight:400;opacity:.8}
 .log li.ok{background:var(--ok-bg);color:var(--ok)} .log li.bad{background:var(--bad-bg);color:var(--bad)}
-.log li span:last-child{font-weight:400;font-size:.9rem}
+.log li > span:nth-child(2){font-weight:400;font-size:.9rem}
 .reveal{display:flex;flex-direction:column;gap:10px}
 .reveal h2{font-family:var(--f-display);font-size:1.25rem;margin:0}
 .ayah{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
@@ -277,7 +281,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
     <span>محاولات متبقية</span>
     <div class="lives" id="lives"></div>
     <span class="hardtag" id="hardTag" hidden>الوضع الصعب</span>
-    <button type="button" class="ghost sm" id="hintBtn" title="يكشف في أي خمسة أجزاء السورة التالية">تلميح <small>(يكلّف محاولة)</small></button>
+    <button type="button" class="ghost sm" id="hintBtn">تلميح <small>(يكلّف محاولة)</small></button>
   </div>
   <div class="msg" id="msg" role="status"></div>
 
@@ -345,8 +349,8 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
       <li>اكتب اسم سورة واضغط ✓ (أو Enter). إذا كانت صحيحة ظهرت الآية التي ورد فيها الموضع، وإذا كان الموضع فيها أكثر من مرة ظهرت آياتها كلها معًا.</li>
       <li>عند كل خطأ يظهر لك في أي خمسة أجزاء تقع إحدى السور التي لم تجدها: «أول سورة تقع في الأجزاء ١–٥»، ثم «ثاني سورة…» عند الخطأ التالي، وهكذا (بترتيب المصحف).</li>
       <li>عدد المحاولات ضعف عدد السور التي ورد فيها الموضع: سورتان = ٤ محاولات، ثلاث سور = ٦ محاولات.</li>
-      <li>زر «تلميح» يعطيك المعلومة نفسها (السورة التالية وأجزاءها) ويكلّفك محاولة.</li>
-      <li>في «تدرّب» على أجزاء محددة لا تظهر هذه المعلومة ولا زر «تلميح»، لأنها لا تضيف شيئًا لمن يتدرّب على تلك الأجزاء.</li>
+      <li>زر «تلميح» يُظهر لك في أي الأجزاء تقع إحدى السور التي لم تجدها بعد، مع نص الآية كاملًا، ويكلّفك محاولة. الرقم بجانبه هو عدد التلميحات المتبقية لك.</li>
+      <li>في «تدرّب» على أجزاء محددة لا تظهر الأجزاء، لأنها لا تضيف شيئًا لمن يتدرّب عليها: الخطأ لا يعطيك معلومة، وزر «تلميح» يُظهر لك نص الآية كاملًا فقط.</li>
     </ul>
     <div class="example">
       <span class="ex-label">مثال</span>
@@ -365,12 +369,12 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && location.h
   <div class="panel" dir="rtl" lang="ar">
     <button type="button" class="x" id="welcomeX" aria-label="إغلاق">×</button>
     <h2 id="welcomeTitle">متشابهات القرآن الكريم</h2>
-    <p class="lead">اختباران قصيران كل يوم لمن يحفظ القرآن:</p>
+    <p class="lead">اختبارات قصيرة كل يوم لمن يحفظ القرآن:</p>
     <ul>
       <li><b>أين ورد؟</b> عبارة تتكرر في القرآن، فاكتب السور التي وردت فيها.</li>
       <li><b>ميّز بينهما</b> موضعان متشابهان، فاعرف سورة كل منهما.</li>
     </ul>
-    <p class="small">في «أين ورد؟» عدد المحاولات ضعف عدد السور، وفي «ميّز بينهما» ٦ محاولات. عند كل خطأ يظهر لك في أي خمسة أجزاء إحدى السور (مثل الأجزاء ١–٥)، وزر «تلميح» يعطيك المعلومة نفسها مقابل محاولة. اختبار جديد كل يوم عند منتصف الليل بتوقيت القاهرة، و«تدرّب» على الأجزاء التي تحفظها متى شئت. زر «؟» يشرح كل اختبار بالتفصيل.</p>
+    <p class="small">في «أين ورد؟» عدد المحاولات ضعف عدد السور، وفي «ميّز بينهما» ٦ محاولات. عند كل خطأ يظهر لك في أي خمسة أجزاء إحدى السور (مثل الأجزاء ١–٥)، وزر «تلميح» يعطيك الأجزاء ونص الآية كاملًا مقابل محاولة. اختبار جديد كل يوم عند منتصف الليل بتوقيت القاهرة، و«تدرّب» على الأجزاء التي تحفظها متى شئت. زر «؟» يشرح كل اختبار بالتفصيل.</p>
     <button type="button" id="welcomeGo" class="start">ابدأ</button>
   </div>
 </div>
@@ -530,10 +534,12 @@ function render(){
   const w = wrongCount();
   $('lives').innerHTML = Array.from({length: S.max}, (_, i) => `<i class="${i < w ? 'used' : ''}"></i>`).join('');
   $('log').innerHTML = S.guesses.slice().reverse().map(g => g.h
-    ? `<li class="hint"><span>تلميح</span><span>${g.c ? clueText(g.c) : hintLabel(g)}</span></li>`
+    ? `<li class="hint"><span>تلميح</span><span>${g.c ? clueText(g.c) : hintLabel(g)}</span>${g.c && g.c.v ? hintVerse(g.c) : ''}</li>`
     : `<li class="${g.ok ? 'ok' : 'bad'}"><span>سورة ${SURAH[g.s]}</span><span>${g.ok ? (S.per[g.s] > 1 ? 'صحيح · ' + places(S.per[g.s]) : 'صحيح') : (g.c ? clueText(g.c) : g.hint || 'خطأ')}</span></li>`).join('');
-  $('hintBtn').hidden = !cluesOn();
-  $('hintBtn').disabled = S.done || wrongCount() >= S.max - 1 || !nextClue();
+  $('hintBtn').hidden = !hintOn();
+  const hl = hintsLeft();
+  $('hintBtn').innerHTML = 'تلميح (' + toAr(hl) + ')';
+  $('hintBtn').disabled = S.done || !hl;
   $('guess').disabled = $('go').disabled = S.done;
   // once the game is over the guess box, tries and hint button are no use: hide them (the guesses list stays)
   $('guessForm').hidden = $('statusRow').hidden = S.done;
@@ -549,16 +555,34 @@ const ORD = ['أول', 'ثاني', 'ثالث', 'رابع', 'خامس', 'سادس
 const BLOCK = b => 'الأجزاء ' + toAr(b * 5 + 1) + '–' + toAr(b * 5 + 5);
 // No clues in practice on chosen juz: saying «الأجزاء ٢٦–٣٠» to someone practising juz 26–30 tells them nothing.
 const cluesOn = () => !HARD && !(S.practice && pick.mode === 'juz' && pick.juz.length);
-const clueText = c => (ORD[S.surahs.indexOf(c.s)] || 'إحدى') + ' سورة تقع في ' + BLOCK(c.b);   // «أول سورة تقع في الأجزاء ٦–١٠»
-function nextClue(){
+const clueText = c => c.nb ? 'آية من ' + (ORD[S.surahs.indexOf(c.s)] || 'إحدى') + ' سورة وردت فيها'   // practice on chosen juz: verse only
+  : (ORD[S.surahs.indexOf(c.s)] || 'إحدى') + ' سورة تقع في ' + BLOCK(c.b);   // «أول سورة تقع في الأجزاء ٦–١٠»
+// verse = true is the «تلميح» button: it also gives the whole verse, so it may pick a surah whose juz a wrong guess
+// already told (but not one that already had its verse shown).
+function clueTargets(verse){
   const P = S.spans.slice().sort((x, y) => x[0] - y[0] || x[1] - y[1]);
-  const told = new Set(S.guesses.filter(g => g.c).map(g => g.c.s));
+  const told = new Set(S.guesses.filter(g => g.c && (!verse || g.c.v)).map(g => g.c.s));
+  const out = [], seen = new Set();
   for (let i = 0; i < P.length; i++) {
     const s = P[i][0];
-    if (S.found.includes(s) || told.has(s)) continue;
-    return Object.assign({ i, s }, { b: Math.floor(((DATA.m && DATA.m[s + ':' + P[i][1]] || [1])[0] - 1) / 5) });
+    if (S.found.includes(s) || told.has(s) || seen.has(s)) continue;
+    seen.add(s);
+    out.push({ i, s, b: Math.floor(((DATA.m && DATA.m[s + ':' + P[i][1]] || [1])[0] - 1) / 5), sp: P[i] });
   }
-  return null;
+  return out;
+}
+function nextClue(verse){
+  const t = clueTargets(verse)[0]; if (!t) return null;
+  const c = { i: t.i, s: t.s, b: t.b };
+  if (verse) { c.v = 1; c.a = t.sp[1]; c.w = [t.sp[2], t.sp[3]]; }
+  return c;
+}
+// hints the player can still take: one per surah not found yet, and never the last try
+const hintOn = () => !HARD;   // the hint button stays in practice on chosen juz, as the verse only
+const hintsLeft = () => hintOn() && !S.done ? Math.max(0, Math.min(clueTargets(true).length, S.max - 1 - wrongCount())) : 0;
+function hintVerse(c){
+  const w = (DATA.v[c.s + ':' + c.a] || '').split(/[\s\u2009]+/).filter(Boolean);
+  return '<p class="hverse">' + w.map((x, i) => (i === c.w[0] ? '<mark>' : '') + esc(x) + (i === c.w[1] - 1 ? '</mark>' : '')).join(' ') + '</p>';
 }
 
 const THIRDS = ['الثلث الأول (الأجزاء ١–١٠)', 'الثلث الثاني (الأجزاء ١١–٢٠)', 'الثلث الأخير (الأجزاء ٢١–٣٠)'];
@@ -573,8 +597,9 @@ function noteMistake(id, clean){
   store.set(MISS_KEY, m.slice(-500));
 }
 function useHint(){
-  if (S.done || wrongCount() >= S.max - 1) return;
-  const c = nextClue(); if (!c) return;
+  if (!hintsLeft()) return;
+  const c = nextClue(true); if (!c) return;
+  if (!cluesOn()) c.nb = 1;
   S.guesses.push({ h: 1, c, ok: false });
   $('msg').textContent = 'تلميح: ' + clueText(c); $('msg').className = 'msg hintmsg';
   if (!S.practice) store.set(S.key, { found: S.found, guesses: S.guesses, done: S.done });
