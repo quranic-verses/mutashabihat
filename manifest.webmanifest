@@ -1,7 +1,7 @@
 {
   "name": "اختبارات قرآنية",
   "short_name": "اختبارات قرآنية",
-  "description": "انتقل الموقع إلى https://quranic-verses.github.io/Quranic-Tests/",
+  "description": "انتقل الموقع إلى https://quranic-verses.github.io/quranic-tests/",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",

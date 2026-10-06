@@ -1,6 +1,6 @@
-// The site moved to https://quranic-verses.github.io/Quranic-Tests/
+// The site moved to https://quranic-verses.github.io/quranic-tests/
 // This replaces the old offline copy: it clears the old cache, sends open pages to the new address, then removes itself.
-const NEW = 'https://quranic-verses.github.io/Quranic-Tests/';
+const NEW = 'https://quranic-verses.github.io/quranic-tests/';
 const target = url => {
   const page = new URL(url).pathname.split('/').pop();
   return NEW + ({"farq.html":"farq.html","privacy.html":"privacy.html"}[page] || "");
