@@ -1,7 +1,7 @@
 {
-  "name": "متشابهات القرآن الكريم",
-  "short_name": "متشابهات القرآن",
-  "description": "اختبارات يومية في متشابهات القرآن الكريم",
+  "name": "اختبارات قرآنية",
+  "short_name": "اختبارات قرآنية",
+  "description": "انتقل الموقع إلى https://quranic-verses.github.io/Quranic-Tests/",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
