@@ -1,5 +1,5 @@
-# متشابهات القرآن الكريم — moved
+# أين ورد؟
 
-This site moved to **https://quranic-verses.github.io/quranic-tests/** (اختبارات قرآنية).
+انتقل الموقع إلى https://quranic-verses.github.io/aynawarad/
 
-Every page here only redirects to the new address. `sw.js` removes the old offline copy from phones that installed the old site.
+The site moved to https://quranic-verses.github.io/aynawarad/ — every page here forwards to the same page there.
